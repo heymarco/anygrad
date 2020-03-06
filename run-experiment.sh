@@ -62,14 +62,18 @@ fi
 TARGET_DIR="$WORKING_DIR/$TARGET/$(timestamp)"
 TARGET_DIR=$(clean_path $TARGET_DIR)
 
+DATA_DIR="${TARGET_DIR}/data"
+DATA_DIR=$(clean_path $DATA_DIR)
+
 # create target dir if needed
 if [ ! -d "$TARGET_DIR" ]; then
 	echo "Creating target directory at $TARGET_DIR"
   	mkdir $TARGET_DIR
 fi
 
-echo "Experiment: $EXPERIMENT" > "$(clean_path $PLOTS_DIR/args.txt)"
-echo "Repetitions: $REPETITIONS" >> "$(clean_path $PLOTS_DIR/args.txt)"
+touch "$(clean_path $TARGET_DIR/args.txt)"
+echo "Experiment: $EXPERIMENT" > "$(clean_path $TARGET_DIR/args.txt)"
+echo "Repetitions: $REPETITIONS" >> "$(clean_path $TARGET_DIR/args.txt)"
 
 java -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS
 
