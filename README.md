@@ -1,5 +1,5 @@
 # AnyGrad
-## Gradient based optimization of large dependency matrices in an 'anytime' fashion
+## Approximation of large dependency matrices in an 'anytime' fashion using gradient ascent
 
 ### Execute
 
