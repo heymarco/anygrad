@@ -5,5 +5,12 @@
 
 The easy way:
 
-1. `sbt assembly`
-2. `bash run-experiment.sh -t target-dir -f filepath -p parallel [0, 1] -e experiment [t-over-m]`
+    sbt assembly
+    bash run-experiment.sh -t target-dir -f filepath -p parallel [0, 1] -e experiment [t-over-m] -r repetitions [Int]
+    
+- `t`: Where to store the results. Results are exported as `json` and stored in a `.txt` file.
+- `f`: Path to the data (csv-file, delimiter=",")
+- `p`: Use parallelization
+- `e`: Select the desired experiment. Possible options are `t-over-m`
+- `r`: Specify the number of repetitions of the experiment
+
