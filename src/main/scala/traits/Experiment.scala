@@ -6,14 +6,19 @@ import io.github.edouardfouche.preprocess.Preprocess
 import traits.Repeatable
 
 trait Experiment {
-    val N: Int
+    var N: Int = 1
     var strategies = Array[Repeatable]()
     var parallel = true
+    var target_dir = "./save"
+    var file_dir = ""
 
     def init_strategies()
 
     def setup(args: Map[String, String]): Unit = {
         parallel = args.getOrElse("-p", "1").toInt == 1
+        N = args.getOrElse("-r", "1").toInt
+        target_dir = args.getOrElse("-t", "./save")
+        file_dir = args("-f")
     }
 
     def load_data(path_to_file: String): Array[Array[Double]] = {
@@ -28,7 +33,7 @@ trait Experiment {
         setup(args)
         init_strategies()
         // load data
-        val data = load_data(args("-f")).transpose
+        val data = load_data(file_dir).transpose
         // run strategies
         if (parallel) {
             println("Running parallel")

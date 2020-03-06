@@ -60,23 +60,12 @@ object Main extends LazyLogging {
       if ( i % 2 == 0) { args_map = args_map + (args(i) -> args(i + 1)) }
     }
 
-    //val experiment_str = if (!args_map.get("-e").isEmpty) args_map("-e") else throw new Error("Please specify the experiment using the '-e' flag.")
-    //val experiment = Experiments.get(experiment_str)
+    val experiment = args("-e")
 
-    CSV.csv_dir = if (!args_map.get("-t").isEmpty) args_map("-t") else throw new Error("Please specify the target directory using the '-t' flag.")
 
-    val tindex = (args indexWhere (_ == "-t")) + 1
-    val aindex = (args indexWhere (_ == "-a")) + 1
-    val dindex = (args indexWhere (_ == "-d")) + 1
-    val mindex = (args indexWhere (_ == "-m")) + 1
-    val pindex = (args indexWhere (_ == "-p")) + 1
-    val rindex = (args indexWhere (_ == "-r")) + 1
-    val sindex = (args indexWhere (_ == "-s")) + 1 // The selected strategy
-    val uindex = (args indexWhere (_ == "-u")) + 1 // The utility function
-
-    val pathindex = (args indexWhere (_ == "-f")) + 1
-
-    val experiment = new TOverM()
+    val experiment = if (experiment == "t-over-m") {
+      new ToverM()
+    }
     experiment.run(args_map)
 
     System.exit(0)

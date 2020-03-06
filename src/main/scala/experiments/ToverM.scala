@@ -7,12 +7,10 @@ import traits.Experiment
 import traits.Repeatable
 
 
-class TOverM extends Experiment {
+class ToverM extends Experiment {
     val num_data_points = 10
     val step_size = 2
     val start = 1
-
-    val N = 1
 
     def init_strategies() = {
         strategies = Array[Repeatable]()
