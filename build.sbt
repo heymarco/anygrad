@@ -27,11 +27,8 @@ libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
 libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.6"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.1.1" % "test"
-//libraryDependencies += "de.lmu.ifi.dbs.elki" % "elki" % "0.7.5"
-//libraryDependencies += "org.apache.commons" % "commons-math3" % "3.6.1"
 libraryDependencies += "commons-io" % "commons-io" % "2.6"
 libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.6.7"
-// libraryDependencies += "org.apache.spark" %% "spark-core" % "2.4.3"
 
 resolvers += "Java.net Maven2 Repository" at "http://download.java.net/maven/2/"
  
