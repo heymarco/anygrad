@@ -6,7 +6,7 @@ import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.{read, write}
 
-import utils.types.Solution
+import utils.types.Snapshot
 import utils.FileUtils
 
 trait Repeatable {
@@ -14,10 +14,10 @@ trait Repeatable {
 
     var max_result_quality = 0.9
 
-    def run(data: Array[Array[Double]], until: Double): Array[Array[Array[(Solution, Double, Double, Double)]]]
+    def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]]
 
-    def repeat_strategy(data: Array[Array[Double]], N: Int, write: Boolean = true): Array[Array[Array[Array[(Solution, Double, Double, Double)]]]] = {
-        var result_buffer = ArrayBuffer[Array[Array[Array[(Solution, Double, Double, Double)]]]]()
+    def repeat_strategy(data: Array[Array[Double]], N: Int, write: Boolean = true): Array[Array[Array[Array[Snapshot]]]] = {
+        var result_buffer = ArrayBuffer[Array[Array[Array[Snapshot]]]]()
         for (i <- 0 until N) {
             val result = run(data, until = max_result_quality)
             result_buffer.append(result)
@@ -31,7 +31,7 @@ trait Repeatable {
         result_arr
     }
 
-    def convert_to_json(result: Array[Array[Array[Array[(Solution, Double, Double, Double)]]]]): String = { // run, round, matrix
+    def convert_to_json(result: Array[Array[Array[Array[Snapshot]]]]): String = { // run, round, matrix
         val result_array = ArrayBuffer[Array[Array[Array[Map[String, Double]]]]]()
         for (run <- result) {
             val result_run = ArrayBuffer[Array[Array[Map[String, Double]]]]() // array of matrices
@@ -40,10 +40,11 @@ trait Repeatable {
                 for (row <- round) {
                     val result_row = ArrayBuffer[Map[String, Double]]() // matrix of round
                     for (item <- row) {
-                        val (solution, quality, iterations, time) = item
+                        val (solution, quality, utility, iterations, time) = item
                         result_row.append(Map[String, Double](
                             "D" -> solution._1,
                             "Q" -> quality,
+                            "U" -> utility,
                             "m" -> solution._2,
                             "M" -> iterations,
                             "T" -> time

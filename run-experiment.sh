@@ -40,7 +40,7 @@ if [[ ! "$FILE" ]]; then
 fi
 
 if [[ ! "$EXPERIMENT" ]]; then
-	echo "Error, please provide the experiment via '-e exp_id'! Possible options are 't-over-m'"
+	echo "Error, please provide the experiment via '-e exp_id'! Possible options are 't-over-m' and 'anygrad'"
 	echo ""
 	exit -1
 fi

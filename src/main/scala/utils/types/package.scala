@@ -14,5 +14,7 @@ object types {
 
 	type Solution = (Double, Int, Variance)
 
+	type Snapshot = (Solution, Double, Double, Double, Double)
+
 	type PreprocessedData = Stats#PreprocessedData
 }
