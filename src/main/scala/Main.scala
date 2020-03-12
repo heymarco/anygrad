@@ -37,14 +37,11 @@ object Main extends LazyLogging {
         val MCDE_Stats = Vector("mwp")
 
         require(args.length > 0, "No arguments given. Please see README.md")
-        //StopWatch.start
-        //require(args.length >= 4, "Arguments should consists in at least 2 items: The task '-t' to perform and the path '-f' to a file.")
 
         var args_map: Map[String, String] = Map()
         for (i <- 0 until args.length - 1) {
             if ( i % 2 == 0) { args_map = args_map + (args(i) -> args(i + 1)) }
         }
-
         val experiment = if (args_map("-e") == "t-over-m") {
             new ToverM()
         }
@@ -54,6 +51,7 @@ object Main extends LazyLogging {
         else {
             new ToverM()
         }
+        StopWatch.start
         experiment.run(args_map)
 
         System.exit(0)

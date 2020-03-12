@@ -8,8 +8,8 @@ import traits.Repeatable
 
 
 class ToverM extends Experiment {
-    val num_data_points = 10
-    val step_size = 2
+    val num_data_points = 12
+    val step_size = 1.5
     val start = 1
 
     def init_strategies() = {

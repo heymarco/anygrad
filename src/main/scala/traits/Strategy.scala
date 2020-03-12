@@ -50,11 +50,11 @@ trait Strategy extends Repeatable {
         val pdata = estimator.preprocess(data)
         var Q_avg = 0.0
         var M = 0
-        val T_start = StopWatch.stop()._1
         var r = 0
         var t_cs = 0.1
         var t_1 = 0.9
         var active_targets = targets
+        val T_start = StopWatch.stop()._1
         while (active_targets.size > 0) {
             val iterations = get_m(t_cs, t_1, r)
             var Q_sum = 0.0

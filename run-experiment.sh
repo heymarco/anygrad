@@ -62,9 +62,6 @@ fi
 TARGET_DIR="$WORKING_DIR/$TARGET/$(timestamp)"
 TARGET_DIR=$(clean_path $TARGET_DIR)
 
-DATA_DIR="${TARGET_DIR}/data"
-DATA_DIR=$(clean_path $DATA_DIR)
-
 # create target dir if needed
 if [ ! -d "$TARGET_DIR" ]; then
 	echo "Creating target directory at $TARGET_DIR"
