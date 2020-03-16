@@ -10,16 +10,17 @@ import traits.Utility
 import traits.MeasuresSwitchingTime
 import traits.Repeatable
 import utils.helper.update_solution
-import utils.types.Snapshot
+import utils.types.{Snapshot, Solution}
 
 
 trait Strategy extends Repeatable {
+    var m: Int = 5
     val estimator: IterativeDependencyEstimator
     val bound: Bound
     val utility_function: Utility
     val epsilon = 0.03
 
-    def get_m(t_cs: Double, t_1: Double, r: Int): Int
+    def get_m(solution: Solution, t_cs: Double, t_1: Double): Int
 
 
     def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): ArrayBuffer[(Int, Int)] = {
@@ -56,13 +57,13 @@ trait Strategy extends Repeatable {
         var active_targets = targets
         val T_start = StopWatch.stop()._1
         while (active_targets.size > 0) {
-            val iterations = get_m(t_cs, t_1, r)
             var Q_sum = 0.0
             val round_results = Array.ofDim[Snapshot](num_elements, num_elements)
             for (p <- active_targets) {
+                val current_result = if (r == 0) (0.0, 0, (0, 0.0, 0.0)) else results.last(p._1)(p._2)._1
+                val iterations = if (r == 0) { m } else { get_m(current_result, t_cs, t_1) }
                 val (dependency_update, time, variance) = estimator.run(pdata, Set(p._1, p._2), iterations)
                 val result = (dependency_update, iterations, variance)
-                val current_result = if (r == 0) (0.0, 0, (0, 0.0, 0.0)) else results.last(p._1)(p._2)._1
                 val updated_result = update_solution(current_result, result)
                 val T_now = StopWatch.stop()._1
                 M = M + iterations
