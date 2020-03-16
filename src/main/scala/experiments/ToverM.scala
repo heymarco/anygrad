@@ -8,14 +8,11 @@ import traits.Repeatable
 
 
 class ToverM extends Experiment {
-    val num_data_points = 12
-    val step_size = 1.5
-    val start = 1
+    val m_list = Array(1, 2, 3, 4, 6, 8, 12, 15, 18, 21, 25, 30, 35, 40, 50)
 
     def init_strategies() = {
         strategies = Array[Repeatable]()
-        for (i <- 0 until num_data_points) {
-            val m = (start * pow(step_size, i)).ceil.toInt
+        for (m <- m_list) {
             val strategy = new Baseline()
             strategy.m = m
             strategies :+= strategy
