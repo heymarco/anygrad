@@ -17,7 +17,7 @@ trait Experiment {
     def setup(args: Map[String, String]): Unit = {
         parallel = args.getOrElse("-p", "1").toInt == 1
         N = args.getOrElse("-r", "1").toInt
-        target_dir = args.getOrElse("-t", "./save")
+        target_dir = args("-t")
         file_dir = args("-f")
     }
 
@@ -38,13 +38,13 @@ trait Experiment {
         if (parallel) {
             println("Running parallel")
             strategies.par.foreach(strategy => {
-                val result = strategy.repeat_strategy(data, N) // data, n, write
+                val result = strategy.repeat_strategy(data, N, write=true, target_dir=target_dir) // data, n, write
             })
         }
         else {
             println("Running sequential")
             strategies.foreach(strategy => {
-                val result = strategy.repeat_strategy(data, N) // data, n, write
+                val result = strategy.repeat_strategy(data, N, write=true, target_dir=target_dir) // data, n, write
             })
         }
     }

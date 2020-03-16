@@ -16,7 +16,7 @@ trait Repeatable {
 
     def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]]
 
-    def repeat_strategy(data: Array[Array[Double]], N: Int, write: Boolean = true): Array[Array[Array[Array[Snapshot]]]] = {
+    def repeat_strategy(data: Array[Array[Double]], N: Int, write: Boolean = true, target_dir: String): Array[Array[Array[Array[Snapshot]]]] = {
         var result_buffer = ArrayBuffer[Array[Array[Array[Snapshot]]]]()
         for (i <- 0 until N) {
             val result = run(data, until = max_result_quality)
@@ -26,7 +26,7 @@ trait Repeatable {
         print("Printing")
         if (write) {
             val json = convert_to_json(result_arr)
-            FileUtils.saveOject(json, to_dir = "./save/" + name + ".txt")
+            FileUtils.saveOject(json, to_dir = target_dir + name + ".txt")
         }
         result_arr
     }
