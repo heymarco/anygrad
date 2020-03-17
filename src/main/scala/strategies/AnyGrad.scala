@@ -13,9 +13,10 @@ class AnyGrad extends Strategy {
     val bound = new Hoeffding()
     val estimator = new MCDE()
     val utility_function = new ValueLinear()
+    var x: Double = 1.0
 
     def name: String = {
-        s"anygrad"
+        s"anygrad_${x}"
     }
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int = {
@@ -24,7 +25,7 @@ class AnyGrad extends Strategy {
         val C = t_cs
         val D = t_1
         val m_opt = -(B * C + sqrt(B*B*C*C-A*B*C*D))/(B*D)
-        max(1, m_opt.toInt)
+        max(1, (m_opt * x).toInt)
     }
 
     override def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): ArrayBuffer[(Int, Int)] = {
