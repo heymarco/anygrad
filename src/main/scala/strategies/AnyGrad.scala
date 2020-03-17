@@ -1,22 +1,22 @@
 package strategies
 
 import scala.collection.mutable.ArrayBuffer
-import scala.math.{pow, sqrt, max}
+import scala.math.{max, pow, sqrt}
 import objects.bound.Hoeffding
 import objects.estimators.MCDE
 import traits.Strategy
-import objects.utility.ValueLinear
+import objects.utility.{Identity, None}
 import utils.types.{Snapshot, Solution}
 
 
 class AnyGrad extends Strategy {
     val bound = new Hoeffding()
     val estimator = new MCDE()
-    val utility_function = new ValueLinear()
+    val utility_function = new None()
     var x: Double = 1.0
 
     def name: String = {
-        s"anygrad_${x}"
+        s"anygrad-${x}"
     }
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int = {

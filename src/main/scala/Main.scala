@@ -42,9 +42,11 @@ object Main extends LazyLogging {
             if ( i % 2 == 0) { args_map = args_map + (args(i) -> args(i + 1)) }
         }
         val experiment = if (args_map("-e") == "t-over-m") {
+            println("Executing experiment 't-over-m'")
             new ToverM()
         }
         else if (args_map("-e") == "anygrad") {
+            println("Executing experiment 'anygrad'")
             new AnygradComparison()
         }
         else {
