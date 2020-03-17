@@ -24,9 +24,10 @@ trait MeasuresSwitchingTime {
 		start_time = StopWatch.stop()._1
 	}
 
-	def calculate_switching_time(N: Int, m: Int): (Double, Double) = {
+	def calculate_switching_time(N: Int, m_round: Int): (Double, Double) = {
 		end_time = StopWatch.stop()._1
 		val duration = end_time - start_time
+		val m = m_round.toDouble / N
 		val t_cs_new = ( duration - t_m_total ) / N
 		val t_1_new = ( duration / N - t_cs_new ) / m
 		val t_cs = (counter * t_cs_prev + t_cs_new) / (counter+1)

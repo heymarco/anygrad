@@ -61,6 +61,7 @@ trait Strategy extends Repeatable with MeasuresSwitchingTime {
             track_start_time()
             var Q_sum = 0.0
             val round_results = Array.ofDim[Snapshot](num_elements, num_elements)
+            var m_round = 0
             for (p <- active_targets) {
                 val current_result = if (r == 0) (0.0, 0, (0, 0.0, 0.0)) else results.last(p._1)(p._2)._1
                 val iterations = if (r == 0) { m } else { get_m(current_result, t_cs, t_1) }
@@ -76,9 +77,10 @@ trait Strategy extends Repeatable with MeasuresSwitchingTime {
                 Q_avg = Q_sum / targets.size
                 round_results(p._1)(p._2) = (updated_result, quality, utility, M, T)
                 round_results(p._2)(p._1) = (updated_result, quality, utility, M, T)
+                m_round += iterations
                 track_computation_time(time)
             }
-            val measurement = calculate_switching_time(active_targets.size, m)
+            val measurement = calculate_switching_time(active_targets.size, m_round)
             t_cs = measurement._1
             t_1 = measurement._2
             results.append(round_results)
