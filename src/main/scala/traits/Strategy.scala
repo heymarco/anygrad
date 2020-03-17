@@ -2,18 +2,17 @@ package traits
 
 import scala.collection.mutable.ArrayBuffer
 import io.github.edouardfouche.utils.StopWatch
-
 import objects.bound.Hoeffding
 import traits.Bound
 import traits.IterativeDependencyEstimator
 import traits.Utility
-import traits.MeasuresSwitchingTime
 import traits.Repeatable
 import utils.helper.update_solution
 import utils.types.{Snapshot, Solution}
+import utils.MeasuresSwitchingTime
 
 
-trait Strategy extends Repeatable with MeasuresSwitchingTime {
+trait Strategy extends Repeatable {
     var m: Int = 5
     val estimator: IterativeDependencyEstimator
     val bound: Bound
@@ -56,9 +55,11 @@ trait Strategy extends Repeatable with MeasuresSwitchingTime {
         var t_1 = 1.0
         var active_targets = targets
         val T_start = StopWatch.stop()._1
+        val timer = new MeasuresSwitchingTime()
+        timer.init_execution()
         while (active_targets.size > 0) {
-            init_measuring_switching_cost()
-            track_start_time()
+            timer.init_round()
+            timer.track_start_time()
             var Q_sum = 0.0
             val round_results = Array.ofDim[Snapshot](num_elements, num_elements)
             var m_round = 0
@@ -78,9 +79,9 @@ trait Strategy extends Repeatable with MeasuresSwitchingTime {
                 round_results(p._1)(p._2) = (updated_result, quality, utility, M, T)
                 round_results(p._2)(p._1) = (updated_result, quality, utility, M, T)
                 m_round += iterations
-                track_computation_time(time)
+                timer.track_computation_time(t = time)
             }
-            val measurement = calculate_switching_time(active_targets.size, m_round)
+            val measurement = timer.calculate_switching_time(active_targets.size, m_round)
             t_cs = measurement._1
             t_1 = measurement._2
             results.append(round_results)
