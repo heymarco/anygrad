@@ -13,7 +13,7 @@ import utils.helper.update_solution
 import utils.types.{Snapshot, Solution}
 
 
-trait Strategy extends Repeatable {
+trait Strategy extends Repeatable with MeasuresSwitchingTime {
     var m: Int = 5
     val estimator: IterativeDependencyEstimator
     val bound: Bound
@@ -52,11 +52,13 @@ trait Strategy extends Repeatable {
         var Q_avg = 0.0
         var M = 0
         var r = 0
-        var t_cs = 0.1
-        var t_1 = 0.9
+        var t_cs = 1.0
+        var t_1 = 1.0
         var active_targets = targets
         val T_start = StopWatch.stop()._1
         while (active_targets.size > 0) {
+            init_measuring_switching_cost()
+            track_start_time()
             var Q_sum = 0.0
             val round_results = Array.ofDim[Snapshot](num_elements, num_elements)
             for (p <- active_targets) {
@@ -74,7 +76,11 @@ trait Strategy extends Repeatable {
                 Q_avg = Q_sum / targets.size
                 round_results(p._1)(p._2) = (updated_result, quality, utility, M, T)
                 round_results(p._2)(p._1) = (updated_result, quality, utility, M, T)
+                track_computation_time(time)
             }
+            val measurement = calculate_switching_time(active_targets.size, m)
+            t_cs = measurement._1
+            t_1 = measurement._2
             results.append(round_results)
             active_targets = select_active_targets(until, targets = targets, results = round_results)
             r = r + 1

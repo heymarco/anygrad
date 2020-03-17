@@ -3,16 +3,14 @@ package traits
 import io.github.edouardfouche.utils.StopWatch
 
 trait MeasuresSwitchingTime {
-	// Initial number of iterations
-	def get_m_initial(): Int
-	// Estimated switching time
-	var t_cs = 1.0
-	// Estimated time for one iteration
-	var t_1 = 1.0
 	// Accumulated time spent on iterations in round 1
+	// !!! Only works if running sequential
 	private var t_m_total = 0.0
 	private var start_time = 0.0
 	private var end_time = 0.0
+	private var t_cs_prev = 0.0
+	private var t_1_prev = 0.0
+	private var counter = 0
 
 	def init_measuring_switching_cost() {
 		t_m_total = 0.0
@@ -26,10 +24,16 @@ trait MeasuresSwitchingTime {
 		start_time = StopWatch.stop()._1
 	}
 
-	def calculate_switching_time(N: Int) {
+	def calculate_switching_time(N: Int, m: Int): (Double, Double) = {
 		end_time = StopWatch.stop()._1
 		val duration = end_time - start_time
-		t_cs = ( duration - t_m_total ) / N
-		t_1 = ( duration / N - t_cs ) / get_m_initial()
+		val t_cs_new = ( duration - t_m_total ) / N
+		val t_1_new = ( duration / N - t_cs_new ) / m
+		val t_cs = (counter * t_cs_prev + t_cs_new) / (counter+1)
+		val t_1 = (counter * t_1_prev + t_1_new) / (counter+1)
+		counter += counter
+		val measurement = (t_cs, t_1)
+		println(measurement)
+		measurement
 	}
 }

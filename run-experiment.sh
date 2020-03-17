@@ -59,7 +59,7 @@ if [[ ! "$REPETITIONS" ]]; then
 	REPETITIONS=1
 fi
 
-TARGET_DIR="$WORKING_DIR/$TARGET/$(timestamp)"
+TARGET_DIR="$WORKING_DIR/$TARGET/$(timestamp)/"
 TARGET_DIR=$(clean_path $TARGET_DIR)
 
 # create target dir if needed
