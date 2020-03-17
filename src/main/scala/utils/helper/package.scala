@@ -12,6 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 import util.Try
 
 import utils.types._
+import io.github.edouardfouche.utils.StopWatch
 
 object helper {
 
@@ -199,6 +200,14 @@ object helper {
         }
         else {
             order2(five, 3, 4); pairs(five, 0, 1, 3, 4)
+        }
+    }
+
+    def wait_nonblocking(sleep: Double): Unit = {
+        val start = StopWatch.stop()._1
+        var now = start
+        while (now - start < sleep) {
+            now = StopWatch.stop()._1
         }
     }
 }

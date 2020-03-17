@@ -1,13 +1,14 @@
 package traits
 
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.ExecutionContext.Implicits.global
 import io.github.edouardfouche.utils.StopWatch
 import objects.bound.Hoeffding
 import traits.Bound
 import traits.IterativeDependencyEstimator
 import traits.Utility
 import traits.Repeatable
-import utils.helper.update_solution
+import utils.helper.{update_solution, wait_nonblocking}
 import utils.types.{Snapshot, Solution}
 import utils.MeasuresSwitchingTime
 
@@ -18,6 +19,7 @@ trait Strategy extends Repeatable {
     val bound: Bound
     val utility_function: Utility
     val epsilon = 0.03
+    var sleep = 0.05 // [ms]
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int
 
@@ -80,6 +82,7 @@ trait Strategy extends Repeatable {
                 round_results(p._2)(p._1) = (updated_result, quality, utility, M, T)
                 m_round += iterations
                 timer.track_computation_time(t = time)
+                wait_nonblocking(sleep)
             }
             results.append(round_results)
             val measurement = timer.calculate_switching_time(active_targets.size, m_round)
