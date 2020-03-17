@@ -81,10 +81,10 @@ trait Strategy extends Repeatable {
                 m_round += iterations
                 timer.track_computation_time(t = time)
             }
+            results.append(round_results)
             val measurement = timer.calculate_switching_time(active_targets.size, m_round)
             t_cs = measurement._1
             t_1 = measurement._2
-            results.append(round_results)
             active_targets = select_active_targets(until, targets = targets, results = round_results)
             r = r + 1
         }

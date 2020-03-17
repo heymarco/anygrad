@@ -4,17 +4,12 @@ import io.github.edouardfouche.utils.StopWatch
 
 class MeasuresSwitchingTime {
 	// Accumulated time spent on iterations in round 1
-	// !!! Only works if running sequential
 	private var t_m_total = 0.0		// the total time spent iterating in this round
 	private var start_time = 0.0	// the time the round started
 	private var end_time = 0.0		// the time the round ended
 	private var t_cs_prev = 0.0		// the switching time of the previous round
 	private var t_1_prev = 0.0		// the iterating time of the previous round
 	private var counter = 0			// the counter how often we measured
-
-	def init_measuring_switching_cost() {
-		t_m_total = 0.0
-	}
 
 	def init_execution(): Unit = {
 		t_m_total = 0.0

@@ -18,6 +18,7 @@ package io.github.edouardfouche.mcde
 
 import scala.collection.parallel.ForkJoinTaskSupport
 import scala.collection.parallel.CollectionConverters._
+import io.github.edouardfouche.utils.StopWatch
 
 import io.github.edouardfouche.utils.StopWatch
 import utils.helper._
@@ -90,6 +91,39 @@ trait McdeStats extends Stats {
     //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
     //else result
     (result, variance)
+  }
+
+  override def contrast_and_time(m: PreprocessedData, dimensions: Set[Int]): (Double, Double, (Int, Double, Double)) = {
+    // Sanity check
+    //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
+    val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
+    //println(s"dimensions $dimensions, sliceSize: ${sliceSize}")
+
+    var variance = (0, 0.0, 0.0)
+    val start = StopWatch.stop()._1
+    val result = if (parallelize == 0) {
+      (1 to M).map(i => {
+        val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
+        val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+        variance = updateVariance(variance, newVal)
+        newVal
+      }).sum / M
+    } else {
+      val iterations = (1 to M).par
+      if (parallelize > 1) {
+        //iterations.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(parallelize))
+        iterations.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(parallelize))
+      }
+      iterations.map(i => {
+        val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
+        twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+      }).sum / M
+    }
+    val end = StopWatch.stop()._1
+
+    //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
+    //else result
+    (result, end - start, variance)
   }
 
   /**

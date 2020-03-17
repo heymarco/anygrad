@@ -24,7 +24,8 @@ class AnyGrad extends Strategy {
         val B = 0.5*bound.ddM(solution, eps = epsilon)
         val C = t_cs
         val D = t_1
-        val m_opt = -(B * C + sqrt(B*B*C*C-A*B*C*D))/(B*D)
+        val m_opt = (B * C + sqrt(B*B*C*C-A*B*C*D))/(B*D)
+        println(m_opt)
         max(1, (m_opt * x).toInt)
     }
 
