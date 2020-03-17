@@ -45,7 +45,7 @@ object Main extends LazyLogging {
             new ToverM()
         }
         else if (args_map("-e") == "anygrad") {
-            new ToverM()
+            new AnygradComparison()
         }
         else {
             new ToverM()
