@@ -19,7 +19,7 @@ trait Strategy extends Repeatable {
     val bound: Bound
     val utility_function: Utility
     val epsilon = 0.03
-    var sleep = 0.05 // [ms]
+    var sleep = 0.1 // [ms]
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int
 

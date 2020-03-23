@@ -37,7 +37,7 @@ class MeasuresSwitchingTime {
 		val duration = end_time - start_time // contains switching time, wait time, processing
 		val m = m_round.toDouble / N
 		val t_cs_new = ( duration - t_m_total ) / N
-		val t_1_new = ( duration / N - t_cs_new ) / m
+		val t_1_new = t_m_total / m_round
 		val t_cs = (counter * t_cs_prev + t_cs_new) / (counter+1)
 		val t_1 = (counter * t_1_prev + t_1_new) / (counter+1)
 		counter += counter
