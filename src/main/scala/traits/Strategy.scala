@@ -14,15 +14,19 @@ import utils.MeasuresSwitchingTime
 
 
 trait Strategy extends Repeatable {
-    var m: Int = 5
     val estimator: IterativeDependencyEstimator
     val bound: Bound
     val utility_function: Utility
-    val epsilon = 0.03
-    var sleep = 0.1 // [ms]
+    var m: Int = 5
+    protected var epsilon = 0.03
+    protected var sleep = 0.1 // [ms]
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int
 
+    def setup(args: Map[String, String]): Unit = {
+        sleep = args.getOrElse("-s", "0.0").toDouble
+        epsilon = args.getOrElse("-eps", "0.03").toDouble
+    }
 
     def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): ArrayBuffer[(Int, Int)] = {
         val flattened_results = (results.zipWithIndex.map{case(r,j) => r.drop(j+1)}).flatten
@@ -56,6 +60,7 @@ trait Strategy extends Repeatable {
         var t_cs = 1.0
         var t_1 = 1.0
         var active_targets = targets
+        val round_results = Array.ofDim[Snapshot](num_elements, num_elements)
         val T_start = StopWatch.stop()._1
         val timer = new MeasuresSwitchingTime()
         timer.init_execution()
@@ -63,10 +68,9 @@ trait Strategy extends Repeatable {
             timer.init_round()
             timer.track_start_time()
             var Q_sum = 0.0
-            val round_results = Array.ofDim[Snapshot](num_elements, num_elements)
             var m_round = 0
             for (p <- active_targets) {
-                val current_result = if (r == 0) (0.0, 0, (0, 0.0, 0.0)) else results.last(p._1)(p._2)._1
+                val current_result = if (r == 0) (0.0, 0, (0, 0.0, 0.0)) else round_results(p._1)(p._2)._1
                 val iterations = if (r == 0) { m } else { get_m(current_result, t_cs, t_1) }
                 val (dependency_update, time, variance) = estimator.run(pdata, Set(p._1, p._2), iterations)
                 val result = (dependency_update, iterations, variance)
@@ -83,8 +87,11 @@ trait Strategy extends Repeatable {
                 m_round += iterations
                 timer.track_computation_time(t = time)
                 wait_nonblocking(sleep)
+                if (scala.util.Random.nextFloat < (2.0/(targets.size))) {
+                    println("Take snapshot")
+                    results.append(round_results)
+                }
             }
-            results.append(round_results)
             val measurement = timer.calculate_switching_time(active_targets.size, m_round)
             t_cs = measurement._1
             t_1 = measurement._2
