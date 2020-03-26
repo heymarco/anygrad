@@ -19,7 +19,7 @@ trait Strategy extends Repeatable {
     val utility_function: Utility
     var m: Int = 5
     protected var epsilon = 0.03
-    protected var sleep = 0.1 // [ms]
+    protected var sleep = 0.9 // [ms]
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int
 
@@ -60,7 +60,8 @@ trait Strategy extends Repeatable {
         var t_cs = 1.0
         var t_1 = 1.0
         var active_targets = targets
-        val round_results = Array.ofDim[Snapshot](num_elements, num_elements)
+        val default_snapshot = ((0.0, 0, (0, 0.0, 0.0)), 0.0, 0.0, 0.0, 0.0)
+        val round_results = Array.fill[Snapshot](num_elements, num_elements)(default_snapshot)
         val T_start = StopWatch.stop()._1
         val timer = new MeasuresSwitchingTime()
         timer.init_execution()
@@ -87,9 +88,10 @@ trait Strategy extends Repeatable {
                 m_round += iterations
                 timer.track_computation_time(t = time)
                 wait_nonblocking(sleep)
-                if (scala.util.Random.nextFloat < (2.0/(targets.size))) {
-                    println("Take snapshot")
-                    results.append(round_results)
+                if (scala.util.Random.nextFloat < 2.0/active_targets.size) {
+                    println("take snapshot")
+                    val copy = round_results.map(arr => arr.clone)
+                    results.append(copy)
                 }
             }
             val measurement = timer.calculate_switching_time(active_targets.size, m_round)

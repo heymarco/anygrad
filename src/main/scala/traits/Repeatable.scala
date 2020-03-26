@@ -12,7 +12,7 @@ import utils.FileUtils
 trait Repeatable {
     def name: String
 
-    var max_result_quality = 0.9
+    var max_result_quality = 0.2
 
     def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]]
 
