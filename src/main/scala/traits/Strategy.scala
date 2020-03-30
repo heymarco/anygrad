@@ -54,6 +54,10 @@ trait Strategy extends Repeatable {
             targets.append((i, j))
         }
         val pdata = estimator.preprocess(data)
+        // prevent cold start
+        for (p <- targets) {
+            val _ = estimator.run(pdata, Set(p._1, p._2), 1)
+        }
         var Q_avg = 0.0
         var M = 0
         var r = 0
