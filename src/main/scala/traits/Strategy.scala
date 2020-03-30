@@ -88,11 +88,8 @@ trait Strategy extends Repeatable {
                 m_round += iterations
                 timer.track_computation_time(t = time)
                 wait_nonblocking(sleep)
-                if (scala.util.Random.nextFloat < 2.0/active_targets.size) {
-                    println("take snapshot")
-                    val copy = round_results.map(arr => arr.clone)
-                    results.append(copy)
-                }
+                val copy = round_results.map(arr => arr.clone)
+                results.append(copy)
             }
             val measurement = timer.calculate_switching_time(active_targets.size, m_round)
             t_cs = measurement._1
