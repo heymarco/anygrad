@@ -8,7 +8,7 @@ import traits.Bound
 import traits.IterativeDependencyEstimator
 import traits.Utility
 import traits.Repeatable
-import utils.helper.{update_solution, wait_nonblocking}
+import utils.helper.{default_snapshot, update_solution, wait_nonblocking}
 import utils.types.{Snapshot, Solution}
 import utils.MeasuresSwitchingTime
 
@@ -19,7 +19,7 @@ trait Strategy extends Repeatable {
     val utility_function: Utility
     var m: Int = 5
     protected var epsilon = 0.03
-    protected var sleep = 0.9 // [ms]
+    protected var sleep = 0.0 // [ms]
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int
 
@@ -64,8 +64,8 @@ trait Strategy extends Repeatable {
         var t_cs = 1.0
         var t_1 = 1.0
         var active_targets = targets
-        val default_snapshot = ((0.0, 0, (0, 0.0, 0.0)), 0.0, 0.0, 0.0, 0.0)
-        val round_results = Array.fill[Snapshot](num_elements, num_elements)(default_snapshot)
+        val default_solution = (0.0, 0, (0, 0.0, 0.0))
+        val round_results = Array.fill[Snapshot](num_elements, num_elements)(default_snapshot(default_solution, bound=bound, eps=epsilon))
         val T_start = StopWatch.stop()._1
         val timer = new MeasuresSwitchingTime()
         timer.init_execution()
@@ -75,7 +75,7 @@ trait Strategy extends Repeatable {
             var Q_sum = 0.0
             var m_round = 0
             for (p <- active_targets) {
-                val current_result = if (r == 0) (0.0, 0, (0, 0.0, 0.0)) else round_results(p._1)(p._2)._1
+                val current_result = if (r == 0) default_solution else round_results(p._1)(p._2)._1
                 val iterations = if (r == 0) { m } else { get_m(current_result, t_cs, t_1) }
                 val (dependency_update, time, variance) = estimator.run(pdata, Set(p._1, p._2), iterations)
                 val result = (dependency_update, iterations, variance)

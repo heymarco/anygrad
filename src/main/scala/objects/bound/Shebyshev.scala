@@ -10,7 +10,7 @@ class Chebyshev extends Bound {
 	def value(input: Solution, eps: Double): Double = {
 		val (v, m, variance_data) = input
 		val _var = variance(variance_data)
-		bounded(_var / (m * eps * eps), 0, 1)
+		_var / (m * eps * eps)
 	}
 
 	def dM(input: Solution, eps: Double): Double = {

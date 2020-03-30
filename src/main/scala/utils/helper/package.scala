@@ -12,6 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 import util.Try
 
 import utils.types._
+import traits.Bound
 import io.github.edouardfouche.utils.StopWatch
 
 object helper {
@@ -209,6 +210,11 @@ object helper {
         while (now - start < sleep) {
             now = StopWatch.stop()._1
         }
+    }
+
+    // (updated_result, quality, utility, M, T)
+    def default_snapshot(default_solution: Solution, bound: Bound, eps: Double): Snapshot = {
+        (default_solution, 1 - bound.value(default_solution, eps), 0.0, 0, 0.0)
     }
 }
 

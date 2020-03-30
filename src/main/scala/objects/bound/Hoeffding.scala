@@ -8,7 +8,7 @@ import utils.types._
 class Hoeffding extends Bound {
 
 	def value(input: Solution, eps: Double): Double = {
-		bounded(2 * exp(-2 * input._2 * eps * eps), 0, 1)
+		2 * exp(-2 * input._2 * eps * eps)
 	}
 	
 	def dM(input: Solution, eps: Double): Double = {

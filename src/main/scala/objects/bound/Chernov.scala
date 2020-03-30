@@ -10,7 +10,7 @@ class Chernov extends Bound {
 	def value(input: Solution, eps: Double): Double = {
 		val (v, m, variance_data) = input
 		val _var = variance(variance_data)
-		bounded(2 * exp(-m * eps * eps / (2 * _var)), 0, 1)
+		2 * exp(-m * eps * eps / (2 * _var))
 	}
 
 	def dM(input: Solution, eps: Double): Double = {
