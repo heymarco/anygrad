@@ -68,13 +68,11 @@ trait Strategy extends Repeatable {
         val round_results = Array.fill[Snapshot](num_elements, num_elements)(default_snapshot(default_solution, bound=bound, eps=epsilon))
         val T_start = StopWatch.stop()._1
         val timer = new MeasuresSwitchingTime()
-        timer.init_execution()
         while (active_targets.size > 0) {
-            timer.init_round()
-            timer.track_start_time()
             var Q_sum = 0.0
             var m_round = 0
             for (p <- active_targets) {
+                timer.track_start_time()
                 val current_result = if (r == 0) default_solution else round_results(p._1)(p._2)._1
                 val iterations = if (r == 0) { m } else { get_m(current_result, t_cs, t_1) }
                 val (dependency_update, time, variance) = estimator.run(pdata, Set(p._1, p._2), iterations)
@@ -90,14 +88,14 @@ trait Strategy extends Repeatable {
                 round_results(p._1)(p._2) = (updated_result, quality, utility, M, T)
                 round_results(p._2)(p._1) = (updated_result, quality, utility, M, T)
                 m_round += iterations
-                timer.track_computation_time(t = time)
                 wait_nonblocking(sleep)
                 val copy = round_results.map(arr => arr.clone)
                 results.append(copy)
+                timer.track_end_time()
+                val measurement = timer.calculate_switching_time(time, m_round)
+                t_cs = measurement._1
+                t_1 = measurement._2
             }
-            val measurement = timer.calculate_switching_time(active_targets.size, m_round)
-            t_cs = measurement._1
-            t_1 = measurement._2
             active_targets = select_active_targets(until, targets = targets, results = round_results)
             r = r + 1
         }
