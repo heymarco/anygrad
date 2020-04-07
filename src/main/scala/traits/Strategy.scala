@@ -94,7 +94,7 @@ trait Strategy extends Repeatable {
                 val copy = round_results.map(arr => arr.clone)
                 results.append(copy)
                 timer.track_end_time()
-                val measurement = timer.calculate_switching_time(time, m_round)
+                val measurement = timer.calculate_switching_time(time, iterations)
                 t_cs = measurement._1
                 t_1 = measurement._2
             }
