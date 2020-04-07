@@ -41,14 +41,14 @@ trait Experiment {
             println("Running parallel")
             strategies.par.foreach(strategy => {
                 strategy.asInstanceOf[Strategy].setup(args)
-                val result = strategy.repeat_strategy(data, N, write=true, target_dir=target_dir) // data, n, write
+                val _ = strategy.repeat_strategy(data, N, write=true, target_dir=target_dir) // data, n, write
             })
         }
         else {
             println("Running sequential")
             strategies.foreach(strategy => {
                 strategy.asInstanceOf[Strategy].setup(args)
-                val result = strategy.repeat_strategy(data, N, write=true, target_dir=target_dir) // data, n, write
+                val _ = strategy.repeat_strategy(data, N, write=true, target_dir=target_dir) // data, n, write
             })
         }
     }
