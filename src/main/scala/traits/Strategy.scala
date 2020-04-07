@@ -29,15 +29,16 @@ trait Strategy extends Repeatable {
     }
 
     def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): ArrayBuffer[(Int, Int)] = {
-        val flattened_results = (results.zipWithIndex.map{case(r,j) => r.drop(j+1)}).flatten
-        var i = 0
-        val num_rows = results.size
-        val active_targets = targets.filter { case _ =>
-            val select = flattened_results(i)._2 < until
-            i += 1
-            select
-        }
-        active_targets
+        targets
+        // val flattened_results = (results.zipWithIndex.map{case(r,j) => r.drop(j+1)}).flatten
+        // var i = 0
+        // val num_rows = results.size
+        // val active_targets = targets.filter { case _ =>
+        //     val select = flattened_results(i)._2 < until
+        //     i += 1
+        //     select
+        // }
+        // active_targets
     }
 
     def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]] = { // Returns an array of matrices
@@ -71,6 +72,7 @@ trait Strategy extends Repeatable {
         while (active_targets.size > 0) {
             var Q_sum = 0.0
             var m_round = 0
+            println("round")
             for (p <- active_targets) {
                 timer.track_start_time()
                 val current_result = if (r == 0) default_solution else round_results(p._1)(p._2)._1

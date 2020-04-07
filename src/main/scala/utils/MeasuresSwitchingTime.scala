@@ -4,7 +4,7 @@ import scala.collection.mutable.Queue
 import io.github.edouardfouche.utils.StopWatch
 
 class MeasuresSwitchingTime {
-	private var window_size = 10
+	private var window_size = 1
 	private var start_time = 0.0			// the time the round started
 	private var end_time = 0.0				// the time the round ended
 
@@ -27,14 +27,14 @@ class MeasuresSwitchingTime {
 	}
 
 	def calculate_switching_time(aa_duration: Double, m: Int): (Double, Double) = {
-		val total = start_time - end_time
+		val total = end_time - start_time
 		val t_switch = total - aa_duration
 		val t_1 = aa_duration / m
 		enqueue(queue_tcs, t_switch, window_size)
 		enqueue(queue_t1, t_1, window_size)
 		val t_switch_ma = queue_tcs.sum / queue_tcs.size
 		val t1_ma = queue_t1.sum / queue_t1.size
-		println((t_switch_ma, t1_ma))
+		println(t1_ma/t_switch_ma)
 		(t_switch_ma, t1_ma)
 	}
 }
