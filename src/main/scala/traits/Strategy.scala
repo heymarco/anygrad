@@ -26,6 +26,7 @@ trait Strategy extends Repeatable {
     def setup(args: Map[String, String]): Unit = {
         sleep = args.getOrElse("-s", "0.0").toDouble
         epsilon = args.getOrElse("-eps", "0.03").toDouble
+        m = args.getOrElse("-m", "5").toInt
     }
 
     def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): ArrayBuffer[(Int, Int)] = {

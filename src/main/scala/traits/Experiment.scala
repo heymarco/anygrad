@@ -21,6 +21,7 @@ trait Experiment {
         target_dir = args("-t")
         file_dir = args("-f")
         sleep = args.getOrElse("-s", "0.0").toDouble
+
     }
 
     def load_data(path_to_file: String): Array[Array[Double]] = {

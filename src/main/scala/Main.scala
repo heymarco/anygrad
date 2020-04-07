@@ -49,6 +49,9 @@ object Main extends LazyLogging {
             println("Executing experiment 'anygrad'")
             new AnygradComparison()
         }
+        else if (args_map("-e") == "singlerun") {
+            new SingleRun()
+        }
         else {
             new ToverM()
         }
