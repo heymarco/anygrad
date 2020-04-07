@@ -29,16 +29,15 @@ trait Strategy extends Repeatable {
     }
 
     def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): ArrayBuffer[(Int, Int)] = {
-        targets
-        // val flattened_results = (results.zipWithIndex.map{case(r,j) => r.drop(j+1)}).flatten
-        // var i = 0
-        // val num_rows = results.size
-        // val active_targets = targets.filter { case _ =>
-        //     val select = flattened_results(i)._2 < until
-        //     i += 1
-        //     select
-        // }
-        // active_targets
+        val flattened_results = (results.zipWithIndex.map{case(r,j) => r.drop(j+1)}).flatten
+        var i = 0
+        val num_rows = results.size
+        val active_targets = targets.filter { case _ =>
+            val select = flattened_results(i)._2 < until
+            i += 1
+            select
+        }
+        active_targets
     }
 
     def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]] = { // Returns an array of matrices
