@@ -1,7 +1,7 @@
 package experiments
 
 import scala.math.pow
-import strategies.{Baseline, AnyGrad}
+import strategies.{Baseline, AnyGradSelectAll}
 import traits.Experiment
 import traits.Repeatable
 
@@ -15,7 +15,7 @@ class AnygradComparison extends Experiment {
             strategy.m = m
             strategies :+= strategy
         }
-        val strategy = new AnyGrad()
+        val strategy = new AnyGradSelectAll()
         strategies :+= strategy
     }
 }
