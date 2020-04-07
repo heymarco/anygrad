@@ -89,7 +89,7 @@ touch "$(clean_path $TARGET_DIR/args.txt)"
 echo "Experiment: $EXPERIMENT" > "$(clean_path $TARGET_DIR/args.txt)"
 echo "Repetitions: $REPETITIONS" >> "$(clean_path $TARGET_DIR/args.txt)"
 
-java -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPSILON
+java -Xmx20480m -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPSILON
 
 echo "Done with execution"
 

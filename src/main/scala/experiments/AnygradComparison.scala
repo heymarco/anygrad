@@ -1,19 +1,21 @@
 package experiments
 
 import scala.math.pow
-import strategies.AnyGrad
+import strategies.{Baseline, AnyGrad}
 import traits.Experiment
 import traits.Repeatable
 
 
 class AnygradComparison extends Experiment {
-    val x_list: Array[Double] = Array(0.2, 0.5, 1.0, 1.5, 2.5, 4)
+    val m_list: Array[Int] = Array(4, 32, 128, 512)
     def init_strategies() = {
         strategies = Array[Repeatable]()
-        for (x <- x_list) {
-            val strategy = new AnyGrad()
-            strategy.x = x
+        for (m <- m_list) {
+            val strategy = new Baseline()
+            strategy.m = m
             strategies :+= strategy
         }
+        val strategy = new AnyGrad()
+        strategies :+= strategy
     }
 }

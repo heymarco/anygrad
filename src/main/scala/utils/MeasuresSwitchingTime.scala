@@ -42,6 +42,7 @@ class MeasuresSwitchingTime {
 		val t_1 = (counter * t_1_prev + t_1_new) / (counter+1)
 		counter += counter
 		val measurement = (t_cs, t_1)
+		println(measurement)
 		measurement
 	}
 }
