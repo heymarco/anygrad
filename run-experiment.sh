@@ -1,17 +1,19 @@
 
 # parse arguments
-while getopts e:f:t:p:r:s: option
+while getopts f:s:m:t:p:r:e:E: OPTION;
 do
-case "${option}"
+echo $OPTION
+case $OPTION
 in
 f)      FILE=${OPTARG};;
-e)      EXPERIMENT=${OPTARG};;
+E)      EXPERIMENT=${OPTARG};;
 t)      TARGET=${OPTARG};;
 p)      PARALLEL=${OPTARG};;
 r)      REPETITIONS=${OPTARG};;
 s)      SLEEP=${OPTARG};;
-eps)    EPSILON=${OPTARG};;
-
+m)		ITERATIONS=${OPTARG};;
+e)		EPS=${OPTARG};;
+\?) echo "Invalid option -$OPTARG" >&2;;
 esac
 done
 
@@ -68,11 +70,18 @@ if [[ ! "$SLEEP" ]]; then
 	SLEEP="0.0"
 fi
 
-if [[ ! "$EPSILON" ]]; then
+if [[ ! "$EPS" ]]; then
 	echo "Warning, epsilon not specified, using default of 0.03."
 	echo "You can specify epsilon using '-eps'."
 	echo ""
-	EPSILON="0.03"
+	EPS=0.03
+fi
+
+if [[ ! "$ITERATIONS" ]]; then
+	echo "Warning, iterations not specified, using default of 5."
+	echo "You can specify iterations using '-m'."
+	echo ""
+	ITERATIONS=5
 fi
 
 
@@ -89,7 +98,7 @@ touch "$(clean_path $TARGET_DIR/args.txt)"
 echo "Experiment: $EXPERIMENT" > "$(clean_path $TARGET_DIR/args.txt)"
 echo "Repetitions: $REPETITIONS" >> "$(clean_path $TARGET_DIR/args.txt)"
 
-java -Xmx20480m -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPSILON
+java -Xmx20480m -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPS -m $ITERATIONS
 
 echo "Done with execution"
 

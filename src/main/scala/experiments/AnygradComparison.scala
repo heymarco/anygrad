@@ -7,7 +7,7 @@ import traits.Repeatable
 
 
 class AnygradComparison extends Experiment {
-    val m_list: Array[Int] = Array(4, 32, 128, 512)
+    val m_list: Array[Int] = Array(512, 128, 32, 4)
     def init_strategies() = {
         strategies = Array[Repeatable]()
         for (m <- m_list) {
