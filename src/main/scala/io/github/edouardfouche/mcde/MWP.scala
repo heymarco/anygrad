@@ -16,8 +16,10 @@
  */
 package io.github.edouardfouche.mcde
 
+import scala.util.Random.nextInt 
 import io.github.edouardfouche.index.CorrectedRankIndex
 import io.github.edouardfouche.utils.HalfGaussian
+import io.github.edouardfouche.utils.StopWatch
 
 import scala.annotation.tailrec
 
@@ -50,14 +52,14 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,  calibrate:
     */
   def twoSample(index: PreprocessedData, reference: Int, indexSelection: Array[Boolean]): Double = {
     //require(reference.length == indexSelection.length, "reference and indexSelection should have the same size")
-    val start = scala.util.Random.nextInt((indexSelection.length * (1-beta)).toInt)
+    val start = nextInt((indexSelection.length * (1-beta)).toInt)
     val sliceStart = index.getSafeCut(start, reference)
     val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
     val sliceEnd = index.getSafeCut(sliceEndSearchStart, reference)
-
     //println(s"indexSelection.length: ${indexSelection.length}, start: $start, actualStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
-
+    val prev = StopWatch.stop()._1
     val ref = index(reference)
+    val now = StopWatch.stop()._1
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Int): (Double, Int) = {
@@ -96,6 +98,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,  calibrate:
       }
     }
     val res = getStat(sliceStart, sliceEnd)
+    println(now-prev)
     //println(s"res : $res")
     res
   }

@@ -17,7 +17,7 @@ trait Strategy extends Repeatable {
     val estimator: IterativeDependencyEstimator
     val bound: Bound
     val utility_function: Utility
-    var m: Int = 20
+    var m: Int = 100
     protected var epsilon = 0.03
     protected var sleep = 0.0 // [ms]
 
@@ -57,8 +57,8 @@ trait Strategy extends Repeatable {
         }
         var M = 0
         var r = 0
-        var t_cs = 1.0
-        var t_1 = 1.0
+        var t_cs = Double.NaN
+        var t_1 = Double.NaN
         var active_targets = targets.zipWithIndex.map(_._2)
         val default_solution = (0.0, 0, (0, 0.0, 0.0))
         val T_start = StopWatch.stop()._1
@@ -86,8 +86,8 @@ trait Strategy extends Repeatable {
                 val quality = 1 - bound.value(updated_result, epsilon)
                 val utility = utility_function.compute(updated_result)
                 wait_nonblocking(sleep)
-                round_results(p._1)(p._2) = (updated_result, quality, utility, M, T)
-                round_results(p._2)(p._1) = (updated_result, quality, utility, M, T)
+                round_results(p._1)(p._2) = (updated_result, quality, utility, M, T, iterations, t_cs, t_1)
+                round_results(p._2)(p._1) = (updated_result, quality, utility, M, T, iterations, t_cs, t_1)
                 results.append(round_results)
                 timer.track_end_time()
                 val measurement = timer.calculate_switching_time(time, iterations)

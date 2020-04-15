@@ -214,7 +214,7 @@ object helper {
 
     // (updated_result, quality, utility, M, T)
     def default_snapshot(default_solution: Solution, bound: Bound, eps: Double): Snapshot = {
-        (default_solution, 1 - bound.value(default_solution, eps), 0.0, 0, 0.0)
+        (default_solution, 1 - bound.value(default_solution, eps), 0.0, 0, 0.0, 0.0, Double.NaN, Double.NaN)
     }
 }
 

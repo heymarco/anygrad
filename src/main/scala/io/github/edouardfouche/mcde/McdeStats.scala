@@ -16,9 +16,9 @@
  */
 package io.github.edouardfouche.mcde
 
+import scala.util.Random.nextInt
 import scala.collection.parallel.ForkJoinTaskSupport
 import scala.collection.parallel.CollectionConverters._
-import io.github.edouardfouche.utils.StopWatch
 
 import io.github.edouardfouche.utils.StopWatch
 import utils.helper._
@@ -71,7 +71,7 @@ trait McdeStats extends Stats {
 
     val result = if (parallelize == 0) {
       (1 to M).map(i => {
-        val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
+        val referenceDim = dimensions.toVector(nextInt(dimensions.size))
         val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
         variance = updateVariance(variance, newVal)
         newVal
@@ -101,8 +101,15 @@ trait McdeStats extends Stats {
 
     var variance = (0, 0.0, 0.0)
     val start = StopWatch.stop()._1
+    var prev_ts = StopWatch.stop()._1
+    println("Start")
+
     val result = if (parallelize == 0) {
       (1 to M).map(i => {
+        val now = StopWatch.stop()._1
+        val duration = now - prev_ts
+        prev_ts = now
+        //println(duration)
         val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
         val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
         variance = updateVariance(variance, newVal)

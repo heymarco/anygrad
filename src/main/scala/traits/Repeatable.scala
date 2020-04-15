@@ -40,14 +40,16 @@ trait Repeatable {
                 for (row <- round) {
                     val result_row = ArrayBuffer[Map[String, Double]]() // matrix of round
                     for (item <- row) {
-                        val (solution, quality, utility, iterations, time) = item
+                        val (solution, quality, utility, iterations, time, m, t_cs, t_1) = item
                         result_row.append(Map[String, Double](
                             "D" -> solution._1,
                             "Q" -> quality,
                             "U" -> utility,
-                            "m" -> solution._2,
+                            "m" -> m,
                             "M" -> iterations,
-                            "T" -> time
+                            "T" -> time,
+                            "tcs" -> t_cs,
+                            "t1" -> t_1
                         ))
                     }
                     result_round.append(result_row.toArray)
