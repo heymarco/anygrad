@@ -104,8 +104,7 @@ trait McdeStats extends Stats {
     var prev_ts = StopWatch.stop()._1
     println("Start")
 
-    val result = if (parallelize == 0) {
-      (1 to M).map(i => {
+    val result = (1 to M_variable).map(i => {
         val now = StopWatch.stop()._1
         val duration = now - prev_ts
         prev_ts = now
@@ -114,22 +113,10 @@ trait McdeStats extends Stats {
         val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
         variance = updateVariance(variance, newVal)
         newVal
-      }).sum / M
-    } else {
-      val iterations = (1 to M).par
-      if (parallelize > 1) {
-        //iterations.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(parallelize))
-        iterations.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(parallelize))
-      }
-      iterations.map(i => {
-        val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-        twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
-      }).sum / M
-    }
+      }).sum / M_variable
     val end = StopWatch.stop()._1
 
     //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    //else result
     (result, end - start, variance)
   }
 

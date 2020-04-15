@@ -57,9 +57,7 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,  calibrate:
     val sliceEndSearchStart = (sliceStart + (indexSelection.length * beta).toInt).min(indexSelection.length - 1)
     val sliceEnd = index.getSafeCut(sliceEndSearchStart, reference)
     //println(s"indexSelection.length: ${indexSelection.length}, start: $start, actualStart: $sliceStart, sliceEnd: $sliceEnd, reference: $reference")
-    val prev = StopWatch.stop()._1
     val ref = index(reference)
-    val now = StopWatch.stop()._1
 
     def getStat(cutStart: Int, cutEnd: Int): Double = {
       @tailrec def cumulative(n: Int, acc: Double, count: Int): (Double, Int) = {
@@ -98,8 +96,6 @@ case class MWP(M: Int = 50, alpha: Double = 0.5, beta: Double = 0.5,  calibrate:
       }
     }
     val res = getStat(sliceStart, sliceEnd)
-    println(now-prev)
-    //println(s"res : $res")
     res
   }
 }

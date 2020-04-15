@@ -15,9 +15,9 @@ trait IterativeDependencyEstimator {
 
 	type PreprocessedData = Stats#PreprocessedData
 
-	var m: Int = 4
+	val approach: Stats
 
-	def approach(): Stats
+	// def approach(): Stats
 
 	def preprocess(data: Array[Array[Double]]): PreprocessedData
 
@@ -27,8 +27,7 @@ trait IterativeDependencyEstimator {
 	// m: the number of iterations to add to the target
 	// returns: (contrast, delta t, variance)
 	def run(data: PreprocessedData, p: Set[Int], m: Int): (Double, Double, (Int, Double, Double)) = {
-		this.m = m
-		val a = approach()
-		a.contrast_and_time(data.asInstanceOf[a.PreprocessedData], p)
+		approach.setM(m)
+		approach.contrast_and_time(data.asInstanceOf[approach.PreprocessedData], p)
 	}
 }

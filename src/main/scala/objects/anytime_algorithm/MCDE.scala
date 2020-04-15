@@ -18,12 +18,10 @@ class MCDE extends IterativeDependencyEstimator {
 	val test: String = "MWP"
 	val parallelize = 0
 
-	def approach(): Stats = {
-		StatsFactory.getTest(test, m, 0.5, 0.5, false, parallelize)
-	}
+	val approach: Stats = StatsFactory.getTest(test, 1, 0.5, 0.5, false, parallelize)
 
 	def preprocess(data: Array[Array[Double]]): PreprocessedData = {
-		approach().preprocess(data.transpose)
+		approach.preprocess(data.transpose)
 	}
 }
 

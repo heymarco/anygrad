@@ -12,6 +12,11 @@ trait Stats {
   val alpha: Double
   val beta: Double
   val M: Int
+  protected var M_variable: Int = 30
+
+  def setM(M: Int): Unit = {
+    M_variable = M
+  }
 
   /**
     * @param input A data set (row oriented)
