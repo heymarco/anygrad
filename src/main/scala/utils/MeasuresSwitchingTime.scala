@@ -4,7 +4,7 @@ import scala.collection.mutable.Queue
 import io.github.edouardfouche.utils.StopWatch
 
 class MeasuresSwitchingTime {
-	private var window_size = 1
+	private var window_size = 30
 	private var start_time = 0.0					// the time the round started
 	private var end_time = 0.0		
 	private var round_overhead_per_target = 0.0		// the time the round ended

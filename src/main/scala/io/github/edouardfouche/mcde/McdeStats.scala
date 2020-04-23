@@ -100,21 +100,38 @@ trait McdeStats extends Stats {
     //println(s"dimensions $dimensions, sliceSize: ${sliceSize}")
 
     var variance = (0, 0.0, 0.0)
-    val start = StopWatch.stop()._1
+
+    // (1 to 4).map(i => {
+    //     val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
+    //     val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+    //     newVal
+    // })
+    
+    var start = Double.NaN
     var prev_ts = StopWatch.stop()._1
     println("Start")
 
-    val result = (1 to M_variable).map(i => {
-        val now = StopWatch.stop()._1
-        val duration = now - prev_ts
-        prev_ts = now
-        //println(duration)
-        val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-        val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
-        variance = updateVariance(variance, newVal)
-        newVal
-      }).sum / M_variable
+    var i = 0
+    var result = 0.0
+    var M_startup_pase = scala.math.min(10, (1.0/2*M_variable)).toInt
+    println(M_startup_pase)
+    while (i < M_variable) {
+      if (i == M_startup_pase) {
+        start = StopWatch.stop()._1
+      }
+      val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
+      val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+      variance = updateVariance(variance, newVal)
+      val now = StopWatch.stop()._1
+      val duration = now - prev_ts
+      prev_ts = now
+      // println(duration)
+      result += newVal
+      i += 1
+    }
     val end = StopWatch.stop()._1
+    val duration = (end - start) * (M_variable / (M_variable - M_startup_pase))
+    result = result / M_variable
 
     //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
     (result, end - start, variance)

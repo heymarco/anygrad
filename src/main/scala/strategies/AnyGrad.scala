@@ -11,7 +11,6 @@ import utils.types.{Snapshot, Solution}
 
 class AnyGrad extends Strategy {
     val bound = new Hoeffding()
-    val estimator = new MCDE()
     val utility_function = new None()
     var x: Double = 1.0
 
