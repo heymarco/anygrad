@@ -5,7 +5,7 @@ import traits.Bound
 import utils.helper._
 import utils.types._
 
-class Chernov extends Bound {
+class Chernoff extends Bound {
 
 	def value(input: Solution, eps: Double): Double = {
 		val (v, m, variance_data) = input
@@ -35,5 +35,10 @@ class Chernov extends Bound {
 		val (v, m, variance_data) = input
 		val _var = variance(variance_data)
 		(2 * _var / (eps * eps) * log(2 / (1 - gamma))).toInt
+	}
+
+	override def confidence(input: Solution, delta: Double = 0.95): Double = {
+		val v = variance(input._3)
+		math.sqrt(2*v*(math.log(2)-math.log(delta))/input._2)
 	}
 }

@@ -36,4 +36,7 @@ class Chebyshev extends Bound {
 		val _var = variance(variance_data)
 		(_var / ((1 - gamma) * eps * eps)).toInt
 	}
+
+	//TODO: implement confidence interval
+	override def confidence(input: (Double, Int, (Int, Double, Double)), delta: Double): Double = ???
 }

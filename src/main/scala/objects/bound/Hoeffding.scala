@@ -26,5 +26,8 @@ class Hoeffding extends Bound {
 	def M(input: Solution, eps: Double, gamma: Double): Int = {
 		(- (log((1 - gamma) / 2)) / (2 * eps * eps)).toInt
 	}
+
+	//TODO: implement confidence interval
+	override def confidence(input: (Double, Int, (Int, Double, Double)), delta: Double): Double = ???
 }
 

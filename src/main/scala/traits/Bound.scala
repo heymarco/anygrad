@@ -12,4 +12,5 @@ trait Bound {
 	def ddM(input: Solution, epsilon: Double): Double
 	def dEps(input: Solution, epsilon: Double): Double
 	def M(input: Solution, epsilon: Double, gamma: Double): Int
+	def confidence(input: Solution, delta: Double = 0.95): Double
 }

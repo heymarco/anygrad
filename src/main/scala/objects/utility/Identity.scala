@@ -8,4 +8,5 @@ import traits.Utility
 import utils.types._
 
 class Identity extends Utility {
+    override def compute(s: (Double, Int, (Int, Double, Double)), w: Double): Double = { w * s._1 }
 }

@@ -8,5 +8,5 @@ import utils.types._
 
 trait Utility {
 	var tau: Double = 1.0
-	def compute(s: Solution, w: Double = 1.0): Double = { w * s._1 }
+	def compute(s: Solution, w: Double = 1.0): Double
 }

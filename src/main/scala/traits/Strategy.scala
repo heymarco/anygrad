@@ -38,7 +38,6 @@ trait Strategy extends Repeatable {
         for (_ <- 0 to num_targets) {
             estimators = estimators :+ new MCDE()
         }
-        print(estimators.size)
     }
 
     def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): ArrayBuffer[Int] = {
@@ -55,7 +54,7 @@ trait Strategy extends Repeatable {
 
         val results = ArrayBuffer[Array[Array[Snapshot]]]()
 
-        val num_elements = data.size
+        val num_elements = data.length
         for {
             i <- 1 until num_elements
             j <- 0 until i
@@ -80,7 +79,7 @@ trait Strategy extends Repeatable {
         val T_start = StopWatch.stop()._1
         val timer = new MeasuresSwitchingTime()
         results.append(Array.fill[Snapshot](num_elements, num_elements)(default_snapshot(default_solution, bound=bound, eps=epsilon)))
-        while (active_targets.size > 0) {
+        while (active_targets.nonEmpty) {
             val round_start = StopWatch.stop()._1
             val iterating_start = StopWatch.stop()._1
             for (i <- active_targets) {
@@ -117,7 +116,7 @@ trait Strategy extends Repeatable {
             val round_processing_time = StopWatch.stop()._1 - round_start - iterating_duration
             timer.track_round_processing_overhead(round_processing_time, current_num_targets)
         }
-        val upper_triangle = ((0 until results.size).map(i => results(i).zipWithIndex.map{case(r,j) => r.drop(j+1)}.dropRight(1)).toArray)
+        val upper_triangle = results.indices.map(i => results(i).zipWithIndex.map{case(r,j) => r.drop(j+1)}.dropRight(1)).toArray
         upper_triangle
     }
 }

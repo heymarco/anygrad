@@ -1,6 +1,6 @@
 
 # parse arguments
-while getopts f:s:m:t:p:r:e:E: OPTION;
+while getopts f:s:m:t:p:r:e:E:q: OPTION;
 do
 echo $OPTION
 case $OPTION
@@ -11,8 +11,9 @@ t)      TARGET=${OPTARG};;
 p)      PARALLEL=${OPTARG};;
 r)      REPETITIONS=${OPTARG};;
 s)      SLEEP=${OPTARG};;
-m)		ITERATIONS=${OPTARG};;
-e)		EPS=${OPTARG};;
+m)		  ITERATIONS=${OPTARG};;
+e)		  EPS=${OPTARG};;
+q)      QUALITY=${OPTARG};;
 \?) echo "Invalid option -$OPTARG" >&2;;
 esac
 done
@@ -77,6 +78,13 @@ if [[ ! "$EPS" ]]; then
 	EPS=0.03
 fi
 
+if [[ ! "$QUALITY" ]]; then
+	echo "Warning, quality not specified, using default of 0.9."
+	echo "You can specify quality using '-q'."
+	echo ""
+	QUALITY=0.9
+fi
+
 if [[ ! "$ITERATIONS" ]]; then
 	echo "Warning, iterations not specified, using default of 5."
 	echo "You can specify iterations using '-m'."
@@ -98,7 +106,7 @@ touch "$(clean_path $TARGET_DIR/args.txt)"
 echo "Experiment: $EXPERIMENT" > "$(clean_path $TARGET_DIR/args.txt)"
 echo "Repetitions: $REPETITIONS" >> "$(clean_path $TARGET_DIR/args.txt)"
 
-java -Xmx20480m -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPS -m $ITERATIONS
+java -Xmx20480m -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPS -m $ITERATIONS -q $QUALITY
 
 echo "Done with execution"
 
