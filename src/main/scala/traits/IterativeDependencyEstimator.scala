@@ -15,8 +15,6 @@ trait IterativeDependencyEstimator {
 
 	val approach: Stats
 
-	// def approach(): Stats
-
 	def preprocess(data: Array[Array[Double]]): Index
 
 	// Runs the anytime algorithm for a certain number of iterations

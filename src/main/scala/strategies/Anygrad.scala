@@ -9,7 +9,7 @@ import objects.utility.{Identity, None}
 import utils.types.{Snapshot, Solution}
 
 
-class AnyGrad extends Strategy {
+class Anygrad extends Strategy {
     val bound = new Chernoff()
     val utility_function = new None()
     var x: Double = 1.0
@@ -26,6 +26,21 @@ class AnyGrad extends Strategy {
         val m_opt = (sqrt(B*B*C*C - A*B*C*D) - B*C)/(B*D)
         val result = max(1, (m_opt * x).toInt)
         result
+    }
+
+    override def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)],
+                                       results: Array[Array[(Solution, Double, Double, Double, Double, Double, Double, Double)]]): ArrayBuffer[Int] = {
+        active_targets = super.select_active_targets(until, targets, results)
+        val matrix_items = active_targets.map(targets)
+        val ucb_vals = matrix_items.map(item => {
+            val result = results(item._1)(item._2)
+            val conf = bound.confidence(result._1)
+            val mean = result._1._1
+            mean + conf
+        })
+        val conf_vals_indices = ucb_vals.zipWithIndex.sortBy(item => item._1)(Ordering[Double].reverse)
+        active_targets = conf_vals_indices.map(item => item._2)
+        active_targets.slice(0, 1).to(ArrayBuffer)
     }
 
     // override def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): ArrayBuffer[Int] = {

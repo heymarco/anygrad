@@ -5,9 +5,9 @@ import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.{read, write}
-
 import utils.types.Snapshot
 import utils.FileUtils
+import utils.helper.variance
 
 trait Repeatable {
     def name: String
@@ -23,10 +23,9 @@ trait Repeatable {
             result_buffer.append(result)
         }
         val result_arr = result_buffer.toArray
-        print("Printing")
         if (write) {
             val json = convert_to_json(result_arr)
-            FileUtils.saveOject(json, to_dir = target_dir + name + ".txt")
+            FileUtils.saveOject(json, to_dir = target_dir + name + ".json")
         }
         result_arr
     }
@@ -42,12 +41,13 @@ trait Repeatable {
                     for (item <- row) {
                         val (solution, quality, utility, iterations, time, m, t_cs, t_1) = item
                         result_row.append(Map[String, Double](
-                            "D" -> solution._1,
-                            "Q" -> quality,
-                            "U" -> utility,
+                            "result" -> solution._1,
+                            "variance" -> variance(solution._3),
+                            "quality" -> quality,
+                            "utility" -> utility,
                             "m" -> m,
                             "M" -> iterations,
-                            "T" -> time,
+                            "duration" -> time,
                             "tcs" -> t_cs,
                             "t1" -> t_1
                         ))

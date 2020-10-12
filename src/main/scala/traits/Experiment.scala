@@ -30,7 +30,7 @@ trait Experiment {
             println(s"Path to file: ${path_to_file}")
             throw new Error(s"Path to file is unvalid")
         }
-        Preprocess.open(path_to_file, header = 1, separator = ",", excludeIndex = true, dropClass = true)
+        Preprocess.open(path_to_file, header = 1, separator = ";", excludeIndex = true, dropClass = true)
     }
 
     def run(args: Map[String, String]) = {

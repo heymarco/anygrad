@@ -1,6 +1,5 @@
 package experiments
 
-import scala.math.pow
 import strategies.{Baseline, AnyGradSelectAll}
 import traits.Experiment
 import traits.Repeatable

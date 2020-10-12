@@ -2,7 +2,7 @@ package strategies
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math.{max, pow, sqrt}
-import objects.bound.Hoeffding
+import objects.bound.{Chernoff, Hoeffding}
 import objects.estimators.MCDE
 import traits.Strategy
 import objects.utility.{Identity, None}
@@ -10,7 +10,7 @@ import utils.types.{Snapshot, Solution}
 
 
 class AnyGradSelectAll extends Strategy {
-    val bound = new Hoeffding()
+    val bound = new Chernoff()
     val utility_function = new None()
     var x: Double = 1.0
 

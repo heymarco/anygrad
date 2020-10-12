@@ -22,8 +22,10 @@ project/plugins/project/
 
 # End of https://www.gitignore.io/api/sbt,scala
 
+data/
 results/
 save/
 *.csv
 *.txt
 *.pdf
+*.json

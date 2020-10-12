@@ -20,6 +20,9 @@ import utils.MeasuresSwitchingTime
 
 
 trait Strategy extends Repeatable {
+    protected var targets = ArrayBuffer[(Int, Int)]()
+    protected var active_targets = ArrayBuffer[Int]()
+
     var estimators = Array[IterativeDependencyEstimator]()
     val bound: Bound
     val utility_function: Utility
@@ -50,7 +53,6 @@ trait Strategy extends Repeatable {
     }
 
     def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]] = { // Returns an array of matrices
-        val targets = ArrayBuffer[(Int, Int)]()
 
         val results = ArrayBuffer[Array[Array[Snapshot]]]()
 
@@ -74,10 +76,10 @@ trait Strategy extends Repeatable {
         var r = 0
         var t_cs = Double.NaN
         var t_1 = Double.NaN
-        var active_targets = targets.zipWithIndex.map(_._2)
         val default_solution = (0.0, 0, (0, 0.0, 0.0))
         val T_start = StopWatch.stop()._1
         val timer = new MeasuresSwitchingTime()
+        active_targets = targets.indices.to(ArrayBuffer)
         results.append(Array.fill[Snapshot](num_elements, num_elements)(default_snapshot(default_solution, bound=bound, eps=epsilon)))
         while (active_targets.nonEmpty) {
             val round_start = StopWatch.stop()._1
