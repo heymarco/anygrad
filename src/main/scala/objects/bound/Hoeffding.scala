@@ -28,6 +28,8 @@ class Hoeffding extends Bound {
 	}
 
 	//TODO: implement confidence interval
-	override def confidence(input: (Double, Int, (Int, Double, Double)), delta: Double): Double = ???
+	override def confidence(input: (Double, Int, (Int, Double, Double)), delta: Double): Double = {
+		sqrt((log(2)-log(delta))/(2*input._2))
+	}
 }
 

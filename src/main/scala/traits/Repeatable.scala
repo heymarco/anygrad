@@ -12,7 +12,7 @@ import utils.helper.variance
 trait Repeatable {
     def name: String
 
-    var max_result_quality = 0.9
+    var max_result_quality = 0.95
 
     def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]]
 
@@ -46,7 +46,8 @@ trait Repeatable {
                             "quality" -> quality,
                             "utility" -> utility,
                             "m" -> m,
-                            "M" -> iterations,
+                            "M" -> solution._2,
+                            "iterations" -> iterations,
                             "duration" -> time,
                             "tcs" -> t_cs,
                             "t1" -> t_1

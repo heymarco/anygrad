@@ -1,19 +1,20 @@
 
 # parse arguments
-while getopts f:s:m:t:p:r:e:E:q: OPTION;
+while getopts f:s:m:t:p:r:e:E:q:S: OPTION;
 do
 echo $OPTION
 case $OPTION
 in
-f)      FILE=${OPTARG};;
-E)      EXPERIMENT=${OPTARG};;
-t)      TARGET=${OPTARG};;
-p)      PARALLEL=${OPTARG};;
-r)      REPETITIONS=${OPTARG};;
-s)      SLEEP=${OPTARG};;
-m)		  ITERATIONS=${OPTARG};;
-e)		  EPS=${OPTARG};;
-q)      QUALITY=${OPTARG};;
+f)            FILE=${OPTARG};;
+E)            EXPERIMENT=${OPTARG};;
+t)            TARGET=${OPTARG};;
+p)            PARALLEL=${OPTARG};;
+r)            REPETITIONS=${OPTARG};;
+s)            SLEEP=${OPTARG};;
+m)		        ITERATIONS=${OPTARG};;
+e)		        EPS=${OPTARG};;
+q)            QUALITY=${OPTARG};;
+S)            STRATEGY=${OPTARG};;
 \?) echo "Invalid option -$OPTARG" >&2;;
 esac
 done
@@ -92,8 +93,15 @@ if [[ ! "$ITERATIONS" ]]; then
 	ITERATIONS=5
 fi
 
+if [[ ! "$STRATEGY" ]]; then
+	echo "Warning, strategy not specified, using baseline as default."
+	echo "You can specify a strategy using '-S'. Options are baseline, anygrad, and anygrad_sa"
+	echo ""
+	STRATEGY="baseline"
+fi
 
-TARGET_DIR="$WORKING_DIR/$TARGET/$(timestamp)/"
+
+TARGET_DIR="$WORKING_DIR/$TARGET/"
 TARGET_DIR=$(clean_path $TARGET_DIR)
 
 # create target dir if needed
@@ -102,11 +110,11 @@ if [ ! -d "$TARGET_DIR" ]; then
   	mkdir $TARGET_DIR
 fi
 
-touch "$(clean_path $TARGET_DIR/args.txt)"
-echo "Experiment: $EXPERIMENT" > "$(clean_path $TARGET_DIR/args.txt)"
-echo "Repetitions: $REPETITIONS" >> "$(clean_path $TARGET_DIR/args.txt)"
+# touch "$(clean_path $TARGET_DIR/args.txt)"
+# echo "Experiment: $EXPERIMENT" > "$(clean_path $TARGET_DIR/args.txt)"
+# echo "Repetitions: $REPETITIONS" >> "$(clean_path $TARGET_DIR/args.txt)"
 
-java -Xmx20480m -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPS -m $ITERATIONS -q $QUALITY
+java -Xmx20480m -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPS -m $ITERATIONS -q $QUALITY -strategy $STRATEGY
 
 echo "Done with execution"
 

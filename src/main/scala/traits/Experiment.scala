@@ -3,8 +3,6 @@ package traits
 import scala.collection.parallel.CollectionConverters._
 import io.github.edouardfouche.preprocess.Preprocess
 
-import traits.Repeatable
-
 trait Experiment {
     var N: Int = 1
     var strategies = Array[Repeatable]()

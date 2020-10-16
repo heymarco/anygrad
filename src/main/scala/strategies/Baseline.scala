@@ -7,8 +7,6 @@ import utils.types.Solution
 
 
 class Baseline extends Strategy {
-    val bound = new Chernoff()
-    val utility_function = new None()
 
     def name: String = {
         s"strategy-$m"

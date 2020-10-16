@@ -39,6 +39,7 @@ class Chernoff extends Bound {
 
 	override def confidence(input: Solution, delta: Double = 0.95): Double = {
 		val v = variance(input._3)
-		math.sqrt(2*v*(math.log(2)-math.log(delta))/input._2)
+		val M = input._2
+		math.sqrt(2*v*(math.log(2)-math.log(delta))/M)
 	}
 }

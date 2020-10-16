@@ -10,8 +10,6 @@ import utils.types.{Snapshot, Solution}
 
 
 class AnyGradSelectAll extends Strategy {
-    val bound = new Chernoff()
-    val utility_function = new None()
     var x: Double = 1.0
 
     def name: String = {

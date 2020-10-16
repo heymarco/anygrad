@@ -109,12 +109,11 @@ trait McdeStats extends Stats {
     
     var start = Double.NaN
     var prev_ts = StopWatch.stop()._1
-    println("Start")
 
     var i = 0
     var result = 0.0
+    //TODO: here we should see if this is really required!
     var M_startup_pase = scala.math.min(10, (1.0/2*M_variable)).toInt
-    println(M_startup_pase)
     while (i < M_variable) {
       if (i == M_startup_pase) {
         start = StopWatch.stop()._1
@@ -125,7 +124,6 @@ trait McdeStats extends Stats {
       val now = StopWatch.stop()._1
       val duration = now - prev_ts
       prev_ts = now
-      // println(duration)
       result += newVal
       i += 1
     }
