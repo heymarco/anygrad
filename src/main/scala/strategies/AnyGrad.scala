@@ -8,7 +8,7 @@ import objects.utility.{Identity, None}
 import utils.types.{Snapshot, Solution}
 
 
-class Anygrad extends Strategy {
+class AnyGrad extends Strategy {
     var x: Double = 1.0
 
     var i = 0

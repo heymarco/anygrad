@@ -1,6 +1,6 @@
 package experiments
 
-import strategies.{AnyGradSelectAll, Anygrad, Baseline}
+import strategies.{AnyGradSelectAll, AnyGrad, Baseline}
 import traits.{Experiment, Repeatable, Strategy}
 
 
@@ -17,7 +17,7 @@ class SingleRun extends Experiment {
     def init_strategies() = {
         strategies = Array[Repeatable]()
         val strategy: Strategy = if ("anygrad".equals(strategy_id)) {
-            new Anygrad()
+            new AnyGrad()
         }
         else if ("anygrad_sa".equals(strategy_id)) {
             new AnyGradSelectAll()
