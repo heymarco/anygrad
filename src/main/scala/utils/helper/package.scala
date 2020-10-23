@@ -64,8 +64,7 @@ object helper {
         val v = update_average(v_old, v_new, m_old, m_new)
         val m = m_old + m_new
         val variance = updateVarianceAggregates(variance_old, variance_new)
-        var result = (v, m, variance)
-        result
+        (v, m, variance)
     }
 
     def update_average(avg_old: Double, new_val: Double, m_old: Int, m_new: Int): Double = {

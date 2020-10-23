@@ -31,14 +31,14 @@ trait Stats {
   }
 
   def contrast(m: PreprocessedData, dimensions: Set[Int]): Double = {
-    contrast_v(m, dimensions)._1
+    contrast_variance(m, dimensions)._1
   }
 
-  def contrast_v(m: PreprocessedData, dimensions: Set[Int]): (Double, (Int, Double, Double))
+  def contrast_variance(m: PreprocessedData, dimensions: Set[Int]): (Double, (Int, Double, Double))
 
-  def contrast_and_time(m: PreprocessedData, dimensions: Set[Int]): (Double, Double, (Int, Double, Double)) = {
+  def contrast_time_variance(m: PreprocessedData, dimensions: Set[Int]): (Double, Double, (Int, Double, Double)) = {
     val prev_t = StopWatch.stop()._1
-    val (c, variance) = contrast_v(m, dimensions)
+    val (c, variance) = contrast_variance(m, dimensions)
     val after_t = StopWatch.stop()._1
     (c, after_t - prev_t, variance)
   }

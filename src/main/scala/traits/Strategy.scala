@@ -38,7 +38,7 @@ trait Strategy extends Repeatable {
         }
     }
 
-    def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): ArrayBuffer[Int] = {
+    def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[((Double, Int, (Int, Double, Double)), Double, Double, Double, Double, Double, Double, Double)]], roundOverhead: Double): ArrayBuffer[Int] = {
         targets.zipWithIndex.filter(item => {
             val quality = results(item._1._1)(item._1._2)._2
             quality < until
@@ -46,7 +46,7 @@ trait Strategy extends Repeatable {
     }
 
     def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]] = { // Returns an array of matrices
-        var targets = ArrayBuffer[(Int, Int)]()
+        val targets = ArrayBuffer[(Int, Int)]()
         val results = ArrayBuffer[Array[Array[Snapshot]]]()
 
         val num_elements = data.length
@@ -65,7 +65,6 @@ trait Strategy extends Repeatable {
         for ((p, i) <- targets.zipWithIndex) {
             val _ = estimators(i).run(pdata, Set(p._1, p._2), 10)
         }
-        print(targets)
         var active_targets = ArrayBuffer[Int]()
         var totalIterations = 0
         var r = 0
@@ -73,18 +72,16 @@ trait Strategy extends Repeatable {
         var t_1 = Double.NaN
         val default_solution: Solution = (0.0, 0, (0, 0.0, 0.0))
         val T_start = StopWatch.stop()._1
-        var T_prev = 0.0
         val timer = new MeasuresSwitchingTime()
+        var totalRoundOverhead = 0.0
+        var round_timestamp = StopWatch.stop()._1
         active_targets = targets.indices.to(ArrayBuffer)
-        results.append(Array.fill[Snapshot](num_elements, num_elements)(default_snapshot(default_solution, bound=bound, eps=epsilon)))
+        results.append(
+            Array.fill[Snapshot](num_elements, num_elements)(default_snapshot(default_solution, bound=bound, eps=epsilon))
+        )
         while (active_targets.nonEmpty) {
-            val round_start = StopWatch.stop()._1
             val iterating_start = StopWatch.stop()._1
-            val round_results = Array.ofDim[Snapshot](num_elements, num_elements)
-            for (p <- targets) {
-                round_results(p._1)(p._2) = results.last(p._1)(p._2)
-                round_results(p._2)(p._1) = results.last(p._1)(p._2)
-            }
+            val round_results = results.last.map(_.clone())
             for (i <- active_targets) {
                 timer.track_start_time()
                 val p = targets(i)
@@ -98,29 +95,37 @@ trait Strategy extends Repeatable {
                 val quality = 1 - bound.value(updated_result, epsilon)
                 val utility = utility_function.compute(updated_result)
                 wait_nonblocking(sleep)
-                // (solution, quality, utility, iterations, time, m, t_cs, t_1)
-                val new_snapshot: Snapshot = (updated_result, quality, utility, totalIterations, T, iterations, t_cs, t_1)
-                round_results(p._1)(p._2) = new_snapshot
-                round_results(p._2)(p._1) = new_snapshot
                 timer.track_end_time()
                 val measurement = timer.calculate_switching_time(time, iterations)
                 t_cs = measurement._1
                 t_1 = measurement._2
-                T_prev = T
+                val new_snapshot: Snapshot = (
+                    updated_result, quality, utility,
+                    totalIterations, T, iterations, t_cs, t_1
+                )
+                round_results(p._1)(p._2) = new_snapshot
+                round_results(p._2)(p._1) = new_snapshot
             }
-            results.append(round_results)
             val iterating_duration = StopWatch.stop()._1 - iterating_start
+            results.append(round_results)
             r = r + 1
-            val round_processing_time = StopWatch.stop()._1 - round_start - iterating_duration
+            val round_processing_time = StopWatch.stop()._1 - round_timestamp - iterating_duration
+            round_timestamp = StopWatch.stop()._1
             timer.track_round_processing_overhead(round_processing_time, active_targets.size)
-            active_targets = select_active_targets(until, targets = targets, results = results.last)
+            active_targets = select_active_targets(until,
+                targets = targets,
+                results = results.last,
+                roundOverhead = timer.getTotalRoundOverhead())
+            totalRoundOverhead += timer.getRoundOverheadPerTarget()
         }
-        println(String.format("Total runtime = %s", StopWatch.stop()._1 - T_start))
         val upper_triangle = results.indices
             .map(i => results(i)
                 .zipWithIndex
                 .map{case(r,j) => r.drop(j+1)}
-                .dropRight(1)).toArray
+                .dropRight(1))
+            .toArray
+        println(String.format("Total runtime = %s", StopWatch.stop()._1 - T_start))
+        println(String.format("Total round overhead = %s", totalRoundOverhead))
         upper_triangle
     }
 }

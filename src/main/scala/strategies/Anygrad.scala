@@ -11,17 +11,19 @@ import utils.types.{Snapshot, Solution}
 class Anygrad extends Strategy {
     var x: Double = 1.0
 
+    var i = 0
+
     def name: String = {
         s"anygrad"
     }
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int = {
         val A = -bound.dM(solution, eps = epsilon)
-        val B = -0.5*bound.ddM(solution, eps = epsilon)
+        val B = -0.5 * bound.ddM(solution, eps = epsilon)
         val C = t_cs
         val D = t_1
-        val m_opt = (sqrt(B*B*C*C - A*B*C*D) - B*C)/(B*D)
-        val result = max(1, (m_opt * x).toInt)
+        val m_opt = (-C + D * sqrt((C * (B * C - A * D)) / (B * D * D))) / D
+        val result = max(1, (m_opt * x).ceil.toInt)
         result
     }
 
@@ -29,29 +31,43 @@ class Anygrad extends Strategy {
      * Select the active targets
      *
      * Combination of UCB-sampling and filtering of targets where quality is less than `until`
-     * @param until The minimum quality of the target
+     *
+     * @param until   The minimum quality of the target
      * @param targets All targets
      * @param results The results (snapshots) obtained so far
      * @return Indices of the active targets
      */
-    override def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)],
-                                       results: Array[Array[Snapshot]]): ArrayBuffer[Int] = {
-        val activeTargetIndices = super.select_active_targets(until, targets, results)
+    override def select_active_targets(until: Double,
+                                       targets: ArrayBuffer[(Int, Int)],
+                                       results: Array[Array[Snapshot]],
+                                       roundOverhead: Double): ArrayBuffer[Int] = {
+        val activeTargetIndices = super.select_active_targets(until, targets, results, roundOverhead = roundOverhead)
         if (activeTargetIndices.isEmpty) {
             return activeTargetIndices
         }
-        var best_val = (-1.0, -1)
-        activeTargetIndices.foreach(index => {
-            val thisTarget = targets(index)
-            val result = results(thisTarget._1)(thisTarget._2)
-            val conf = bound.confidence(result._1, delta = 1-until)
-            val optimisticSolution = (result._1._1 + conf, result._1._2, result._1._3)
-            val optimisticUtility = utility_function.compute(optimisticSolution)
-            var slope = bound.dM(result._1, eps = epsilon)
-            slope *= optimisticUtility
-            best_val = if (optimisticUtility > best_val._1) { (optimisticUtility, index) } else { best_val }
-        })
-        val result = ArrayBuffer(best_val._2)
-        result
+        val numActiveTargets = activeTargetIndices.length
+        var minGradient = Double.MaxValue
+        var maxGradient = Double.MinValue
+        // println(String.format("data_%s = [", i))
+        val allGradients = activeTargetIndices.map(
+            index => {
+                val thisTarget = targets(index)
+                val result = results(thisTarget._1)(thisTarget._2)
+                val utility = result._3
+                val gradient = -bound.dM(result._1, eps = epsilon) * utility
+                // println(String.format("%s, ", i))
+                i += 1
+                minGradient = if (gradient < minGradient) { gradient } else { minGradient }
+                maxGradient = if (gradient > maxGradient) { gradient } else { maxGradient }
+                gradient
+            })
+        // println("]")
+        val filteredActiveTargetIndices = activeTargetIndices.zipWithIndex.filter {
+            case (target, index) => {
+                allGradients(index) - minGradient >= (maxGradient - minGradient) / 2.0
+            }
+        }.map(_._1)
+        // println(String.format("%s, ", filteredActiveTargetIndices.length.toDouble/numActiveTargets))
+        filteredActiveTargetIndices
     }
 }

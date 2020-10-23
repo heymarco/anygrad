@@ -8,6 +8,7 @@ class MeasuresSwitchingTime {
 	private var start_time = 0.0					// the time the round started
 	private var end_time = 0.0		
 	private var round_overhead_per_target = 0.0		// the time the round ended
+	private var num_targets = 1.0
 
 	val queue_tcs = new Queue[Double]
 	val queue_t1 = new Queue[Double]
@@ -39,6 +40,15 @@ class MeasuresSwitchingTime {
 	}
 
 	def track_round_processing_overhead(duration: Double, num_targets: Int) = {
+		this.num_targets = num_targets
 		round_overhead_per_target = duration / num_targets
+	}
+
+	def getRoundOverheadPerTarget(): Double = {
+		round_overhead_per_target
+	}
+
+	def getTotalRoundOverhead(): Double = {
+		round_overhead_per_target * num_targets
 	}
 }

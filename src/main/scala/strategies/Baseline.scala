@@ -9,7 +9,7 @@ import utils.types.Solution
 class Baseline extends Strategy {
 
     def name: String = {
-        s"strategy-$m"
+        s"baseline-$m"
     }
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int = m

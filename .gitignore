@@ -29,3 +29,4 @@ save/
 *.txt
 *.pdf
 *.json
+*.pyc

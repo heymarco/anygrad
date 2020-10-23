@@ -24,6 +24,6 @@ trait IterativeDependencyEstimator {
 	// returns: (contrast, delta t, variance)
 	def run(data: Index, p: Set[Int], m: Int): (Double, Double, (Int, Double, Double)) = {
 		approach.setM(m)
-		approach.contrast_and_time(data.asInstanceOf[approach.PreprocessedData], p)
+		approach.contrast_time_variance(data.asInstanceOf[approach.PreprocessedData], p)
 	}
 }

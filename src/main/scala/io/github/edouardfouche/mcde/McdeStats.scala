@@ -61,7 +61,7 @@ trait McdeStats extends Stats {
     * @param dimensions The dimensions in the subspace, each value should be smaller than the number of arrays in m
     * @return The contrast of the subspace (value between 0 and 1)
     */
-  def contrast_v(m: PreprocessedData, dimensions: Set[Int]): (Double, (Int, Double, Double)) = {
+  def contrast_variance(m: PreprocessedData, dimensions: Set[Int]): (Double, (Int, Double, Double)) = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
@@ -93,7 +93,7 @@ trait McdeStats extends Stats {
     (result, variance)
   }
 
-  override def contrast_and_time(m: PreprocessedData, dimensions: Set[Int]): (Double, Double, (Int, Double, Double)) = {
+  override def contrast_time_variance(m: PreprocessedData, dimensions: Set[Int]): (Double, Double, (Int, Double, Double)) = {
     // Sanity check
     //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
@@ -107,32 +107,18 @@ trait McdeStats extends Stats {
     //     newVal
     // })
     
-    var start = Double.NaN
-    var prev_ts = StopWatch.stop()._1
-
-    var i = 0
+    val start = StopWatch.stop()._1
     var result = 0.0
-    //TODO: here we should see if this is really required!
-    var M_startup_pase = scala.math.min(10, (1.0/2*M_variable)).toInt
-    while (i < M_variable) {
-      if (i == M_startup_pase) {
-        start = StopWatch.stop()._1
-      }
+    (0 until M_variable).map(_ => {
       val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
       val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
       variance = updateVariance(variance, newVal)
-      val now = StopWatch.stop()._1
-      val duration = now - prev_ts
-      prev_ts = now
       result += newVal
-      i += 1
-    }
-    val end = StopWatch.stop()._1
-    val duration = (end - start) * (M_variable / (M_variable - M_startup_pase))
+    })
     result = result / M_variable
 
     //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    (result, end - start, variance)
+    (result, StopWatch.stop()._1 - start, variance)
   }
 
   /**
