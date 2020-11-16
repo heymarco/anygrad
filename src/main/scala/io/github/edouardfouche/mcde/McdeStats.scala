@@ -17,9 +17,8 @@
 package io.github.edouardfouche.mcde
 
 import scala.util.Random.nextInt
-import scala.collection.parallel.ForkJoinTaskSupport
-import scala.collection.parallel.CollectionConverters._
-
+import scala.collection.parallel.{ForkJoinTaskSupport, MIN_FOR_COPY}
+// import scala.collection.parallel.CollectionConverters._
 import io.github.edouardfouche.utils.StopWatch
 import utils.helper._
 
@@ -62,63 +61,32 @@ trait McdeStats extends Stats {
     * @return The contrast of the subspace (value between 0 and 1)
     */
   def contrast_variance(m: PreprocessedData, dimensions: Set[Int]): (Double, (Int, Double, Double)) = {
-    // Sanity check
-    //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
-    //println(s"dimensions $dimensions, sliceSize: ${sliceSize}")
-
     var variance = (0, 0.0, 0.0)
 
-    val result = if (parallelize == 0) {
-      (1 to M).map(i => {
-        val referenceDim = dimensions.toVector(nextInt(dimensions.size))
-        val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
-        variance = updateVariance(variance, newVal)
-        newVal
-      }).sum / M
-    } else {
-      val iterations = (1 to M).par
-      if (parallelize > 1) {
-        //iterations.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(parallelize))
-        iterations.tasksupport = new ForkJoinTaskSupport(new java.util.concurrent.ForkJoinPool(parallelize))
-      }
-      iterations.map(i => {
-        val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-        twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
-      }).sum / M
-    }
+    iterationResults = (1 to M_variable).map(i => {
+      val referenceDim = dimensions.toVector(nextInt(dimensions.size))
+      val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
+      variance = updateVariance(variance, newVal)
+      newVal
+    }).toList
 
-    //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    //else result
-    (result, variance)
+    (iterationResults.sum / M_variable, variance)
   }
 
   override def contrast_time_variance(m: PreprocessedData, dimensions: Set[Int]): (Double, Double, (Int, Double, Double)) = {
-    // Sanity check
-    //require(dimensions.forall(x => x>=0 & x < m.length), "The dimensions for deviation need to be greater or equal to 0 and lower than the total number of dimensions")
     val sliceSize = (math.pow(alpha, 1.0 / (dimensions.size - 1.0)) * m.numRows).ceil.toInt /// WARNING: Do not forget -1
-    //println(s"dimensions $dimensions, sliceSize: ${sliceSize}")
-
     var variance = (0, 0.0, 0.0)
-
-    // (1 to 4).map(i => {
-    //     val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
-    //     val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
-    //     newVal
-    // })
     
     val start = StopWatch.stop()._1
-    var result = 0.0
-    (0 until M_variable).map(_ => {
+    iterationResults = (0 until M_variable).map(_ => {
       val referenceDim = dimensions.toVector(scala.util.Random.nextInt(dimensions.size))
       val newVal = twoSample(m, referenceDim, m.randomSlice(dimensions, referenceDim, sliceSize))
       variance = updateVariance(variance, newVal)
-      result += newVal
-    })
-    result = result / M_variable
+      newVal
+    }).toList
 
-    //if(calibrate) Calibrator.calibrateValue(result, StatsFactory.getTest(this.id, this.M, this.alpha, calibrate=false), dimensions.size, m(0).length)// calibrateValue(result, dimensions.size, alpha, M)
-    (result, StopWatch.stop()._1 - start, variance)
+    (iterationResults.sum / M_variable, StopWatch.stop()._1 - start, variance)
   }
 
   /**

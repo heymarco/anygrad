@@ -34,7 +34,7 @@ class MeasuresSwitchingTime {
 		val t_1 = aa_duration / m
 		enqueue(queue_tcs, t_switch, window_size)
 		enqueue(queue_t1, t_1, window_size)
-		val t_switch_ma = queue_tcs.sum / queue_tcs.size + round_overhead_per_target
+		val t_switch_ma = queue_tcs.sum / queue_tcs.size // + round_overhead_per_target
 		val t1_ma = queue_t1.sum / queue_t1.size
 		(t_switch_ma, t1_ma)
 	}

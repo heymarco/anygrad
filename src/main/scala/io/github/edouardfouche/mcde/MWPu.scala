@@ -21,7 +21,7 @@ import io.github.edouardfouche.utils.HalfGaussian
 
 import scala.annotation.tailrec
 import scala.collection.parallel.ForkJoinTaskSupport
-import scala.collection.parallel.CollectionConverters._
+// import scala.collection.parallel.CollectionConverters._
 
 /**
   * Same as MWP, but without border effects.

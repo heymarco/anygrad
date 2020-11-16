@@ -1,6 +1,6 @@
 import Dependencies._
 
-ThisBuild / scalaVersion     := "2.13.1"
+ThisBuild / scalaVersion     := "2.12.9"
 ThisBuild / version          := "0.0.1"
 ThisBuild / organization     := "com.example"
 ThisBuild / organizationName := "example"
@@ -28,7 +28,8 @@ libraryDependencies += "com.github.tototoshi" %% "scala-csv" % "1.3.6"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.1.1" % "test"
 libraryDependencies += "commons-io" % "commons-io" % "2.6"
-libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.6.7"
+libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.7.0-M7"
+
 
 resolvers += "Java.net Maven2 Repository" at "http://download.java.net/maven/2/"
  
@@ -46,3 +47,12 @@ libraryDependencies ++= Seq(
   // It depends on LGPL code
   // "org.scalanlp" %% "breeze-viz" % "0.13.1"
 )
+
+// https://mvnrepository.com/artifact/org.apache.spark/spark-mllib
+// libraryDependencies += "org.apache.spark" %% "spark-mllib" % "3.0.1"
+// libraryDependencies += "org.apache.spark" %% "spark-sql" % "3.0.1"
+
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}

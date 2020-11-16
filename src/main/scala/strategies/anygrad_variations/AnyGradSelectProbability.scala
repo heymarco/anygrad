@@ -1,17 +1,17 @@
-package strategies
+package strategies.anygrad_variations
 
-import scala.collection.mutable.ArrayBuffer
-import scala.math.{max, pow, sqrt}
-import objects.bound.{Chernoff, Hoeffding}
 import traits.Strategy
-import objects.utility.{Identity, None}
 import utils.types.{Snapshot, Solution}
 
+import scala.collection.mutable.ArrayBuffer
+import scala.math.{max, sqrt}
+import scala.util.Random.nextFloat
 
-class AnyGrad extends Strategy {
+
+class AnyGradSelectProbability extends Strategy {
     var i = 0
 
-    def name: String = "anygrad"
+    def name: String = "anygrad-sp"
 
     /**
      * Select the active targets
@@ -48,9 +48,12 @@ class AnyGrad extends Strategy {
                 gradient
             })
         // println("]")
+        if (maxGradient == minGradient) { // All gradients are equal
+            return activeTargetIndices
+        }
         val filteredActiveTargetIndices = activeTargetIndices.zipWithIndex.filter {
-            case (target, index) => {
-                allGradients(index) - minGradient >= (maxGradient - minGradient) / 2.0
+            case (_, index) => {
+                (allGradients(index) - minGradient)/(maxGradient - minGradient) >= nextFloat()
             }
         }.map(_._1)
         // println(String.format("%s, ", filteredActiveTargetIndices.length.toDouble/numActiveTargets))

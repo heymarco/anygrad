@@ -1,75 +1,66 @@
-package traits
+package strategies.anygrad_variations
 
-import scala.collection.mutable.ArrayBuffer
 import io.github.edouardfouche.utils.StopWatch
-import objects.estimators.MCDE
-import objects.bound.{Chernoff, Hoeffding}
-import objects.utility.{Identity, None}
+import traits.Strategy
+import utils.{MeasuresSwitchingTime, PerformanceObserver}
 import utils.helper.{default_snapshot, update_solution, wait_nonblocking}
 import utils.types.{Snapshot, Solution}
-import utils.{MeasuresSwitchingTime, PerformanceObserver}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.math.{max, sqrt}
+import scala.util.Random.nextFloat
 
 
-trait Strategy extends Repeatable {
-    var x: Double = 1.0  // TODO: What is x?
-    var estimators = Array[IterativeDependencyEstimator]()
-    val bound: Bound = new Hoeffding()
-    val utility_function: Utility = new None()
-    var m: Int = 10
-    protected var epsilon = 0.03
-    protected var sleep = 0.0 // [ms]
-    protected val burnInPhaseLength = 10
+class AnygradEmpiricalInfo extends Strategy {
+    private var performanceObserver: PerformanceObserver = null
 
-    def get_m(solution: Solution, t_cs: Double, t_1: Double): Int = {
-        val dM = -bound.dM(solution, eps = epsilon)
-        val ddM = -bound.ddM(solution, eps = epsilon)
-//        println("***")
-//        println("ratio gradient  = %s".format(dM/ddM))
-//        println("ratio time  = %s".format(t_cs/t_1))
-        get_m(dM, ddM, t_cs, t_1)
+    def name: String = {
+        s"anygrad-ei"
     }
 
-    def get_m(performanceObserver: PerformanceObserver, targetIndex: Int,
-              t_cs: Double, t_1: Double): Int = {
-        val dM = performanceObserver.get1stDerivationApproximation(targetIndex)
-        val ddM = performanceObserver.get2ndDerivationApproximation(targetIndex)
-//        println("***")
-//        println("ratio gradient  = %s".format(dM/ddM))
-//        println("ratio time  = %s".format(t_cs/t_1))
-        get_m(dM, ddM, t_cs, t_1)
-    }
-
-    def get_m(dM: Double, ddM: Double, t_cs: Double, t_1: Double): Int = {
-        val A = dM
-        val B = 0.5*ddM
-        val C = t_cs
-        val D = t_1
-        val m_opt = (-C + D*sqrt((C*(B*C - A*D))/(B*D*D)))/D
-        val result = max(1, (m_opt * x).ceil.toInt)
-        result
-    }
-
-    def setup(args: Map[String, String]): Unit = {
-        sleep = args.getOrElse("-s", "0.0").toDouble
-        epsilon = args.getOrElse("-eps", "0.03").toDouble
-    }
-
-    def init_dependency_estimators(num_targets: Int) {
-        for (_ <- 0 to num_targets) {
-            estimators = estimators :+ new MCDE()
+    /**
+     * Select the active targets
+     *
+     * Combination of UCB-sampling and filtering of targets where quality is less than `until`
+     *
+     * @param until   The minimum quality of the target
+     * @param targets All targets
+     * @param results The results (snapshots) obtained so far
+     * @return Indices of the active targets
+     */
+    override def select_active_targets(until: Double,
+                                       targets: ArrayBuffer[(Int, Int)],
+                                       results: Array[Array[Snapshot]],
+                                       roundOverhead: Double): Array[Int] = {
+        val activeTargetIndices = super.select_active_targets(until, targets, results, roundOverhead = roundOverhead)
+        if (activeTargetIndices.isEmpty) {
+            return activeTargetIndices
         }
+        var minGradient = Double.MaxValue
+        var maxGradient = Double.MinValue
+        val allGradients = activeTargetIndices.map(
+            index => {
+                val thisTarget = targets(index)
+                val result = results(thisTarget._1)(thisTarget._2)
+                val utility = result._3
+                val qualityGradient = performanceObserver.get1stDerivationApproximation(forTarget = index)
+                val utilityGradient = qualityGradient * utility
+                minGradient = if (utilityGradient < minGradient) { utilityGradient } else { minGradient }
+                maxGradient = if (utilityGradient > maxGradient) { utilityGradient } else { maxGradient }
+                utilityGradient
+            })
+        if (maxGradient == minGradient) { // All gradients are equal
+            return activeTargetIndices
+        }
+        val filteredActiveTargetIndices = activeTargetIndices.zipWithIndex.filter {
+            case (_, index) => {
+                (allGradients(index) - minGradient)/(maxGradient - minGradient) >= nextFloat()
+            }
+        }.map(_._1)
+        filteredActiveTargetIndices
     }
 
-    def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[((Double, Int, (Int, Double, Double)), Double, Double, Double, Double, Double, Double, Double)]], roundOverhead: Double): Array[Int] = {
-        targets.zipWithIndex.filter(item => {
-            val quality = results(item._1._1)(item._1._2)._2
-            quality < until
-        }).map(_._2).toArray
-    }
-
-    def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]] = { // Returns an array of matrices
+    override def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]] = { // Returns an array of matrices
         val targets = ArrayBuffer[(Int, Int)]()
         val results = ArrayBuffer[Array[Array[Snapshot]]]()
 
@@ -77,19 +68,18 @@ trait Strategy extends Repeatable {
         for {
             i <- 1 until num_elements
             j <- 0 until i
-        }
-        {
+        } {
             targets.append((i, j))
         }
+        performanceObserver = new PerformanceObserver(numTargets = targets.length)
         init_dependency_estimators(targets.size)
-        
+
         val pdata = estimators(0).preprocess(data)
 
         // prevent cold start
         for ((p, i) <- targets.zipWithIndex) {
             val _ = estimators(i).run(pdata, Set(p._1, p._2), 10)
         }
-
         var active_targets = Array[Int]()
         var totalIterations = 0
         var r = 0
@@ -111,13 +101,14 @@ trait Strategy extends Repeatable {
                 timer.track_start_time()
                 val p = targets(i)
                 val current_result = round_results(p._1)(p._2)._1
-                val iterations = if (burnInPhaseFinished(r)) { get_m(current_result, t_cs, t_1) } else { m }
+                val iterations = if (burnInPhaseFinished(r)) { get_m(performanceObserver, i, t_cs, t_1) } else { m }
                 val (dependency_update, time, variance) = estimators(i).run(pdata, Set(p._1, p._2), iterations)
                 val result = (dependency_update, iterations, variance)
                 val updated_result = update_solution(current_result, result)
                 totalIterations = totalIterations + iterations
                 val T = StopWatch.stop()._1 - T_start
                 val quality = 1 - bound.value(updated_result, epsilon)
+                performanceObserver.enqueue((updated_result._2, quality), at = i, maxSize = burnInPhaseLength)
                 val utility = utility_function.compute(updated_result)
                 wait_nonblocking(sleep)
                 timer.track_end_time()
@@ -138,10 +129,12 @@ trait Strategy extends Repeatable {
             timer.track_round_processing_overhead(round_processing_time, active_targets.size)
             r = r + 1
             if (burnInPhaseFinished(r)) {
-                active_targets = select_active_targets(until,
+                active_targets = select_active_targets(
+                    until = until,
                     targets = targets,
                     results = results.last,
-                    roundOverhead = timer.getTotalRoundOverhead())
+                    roundOverhead = timer.getTotalRoundOverhead()
+                )
             }
             totalRoundOverhead += timer.getRoundOverheadPerTarget()
         }
@@ -149,15 +142,4 @@ trait Strategy extends Repeatable {
         println("Total round overhead = %s".format(totalRoundOverhead))
         getUpperTriangle(results)
     }
-
-    protected def getUpperTriangle(results: ArrayBuffer[Array[Array[Snapshot]]]): Array[Array[Array[Snapshot]]] = {
-        results.indices
-            .map(i => results(i)
-                .zipWithIndex
-                .map{case(r,j) => r.drop(j+1)}
-                .dropRight(1))
-            .toArray
-    }
-
-    protected def burnInPhaseFinished(roundIndex: Int): Boolean = roundIndex >= burnInPhaseLength
 }

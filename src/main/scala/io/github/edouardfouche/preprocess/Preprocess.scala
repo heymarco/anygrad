@@ -17,7 +17,7 @@
 package io.github.edouardfouche.preprocess
 
 import scala.collection.parallel.ForkJoinTaskSupport
-import scala.collection.parallel.CollectionConverters._
+// import scala.collection.parallel.CollectionConverters._
 
 /**
   * Created by fouchee on 02.05.17.

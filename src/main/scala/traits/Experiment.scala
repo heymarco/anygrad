@@ -1,6 +1,6 @@
 package traits
 
-import scala.collection.parallel.CollectionConverters._
+// import scala.collection.parallel.CollectionConverters._
 import io.github.edouardfouche.preprocess.Preprocess
 
 trait Experiment {

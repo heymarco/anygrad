@@ -95,7 +95,7 @@ fi
 
 if [[ ! "$STRATEGY" ]]; then
 	echo "Warning, strategy not specified, using baseline as default."
-	echo "You can specify a strategy using '-S'. Options are baseline, anygrad, and anygrad_sa"
+	echo "You can specify a strategy using '-S'. Options are baseline, anygrad, anygrad_sa, and anygrad_sp"
 	echo ""
 	STRATEGY="baseline"
 fi
@@ -114,4 +114,4 @@ fi
 # echo "Experiment: $EXPERIMENT" > "$(clean_path $TARGET_DIR/args.txt)"
 # echo "Repetitions: $REPETITIONS" >> "$(clean_path $TARGET_DIR/args.txt)"
 
-java -Xmx20480m -jar target/scala-2.13/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPS -m $ITERATIONS -q $QUALITY -strategy $STRATEGY
+java -Xmx20480m -jar target/scala-2.12/anygrad-assembly-0.0.1.jar -t $TARGET_DIR -e $EXPERIMENT -f $FILE -p $PARALLEL -r $REPETITIONS -s $SLEEP -eps $EPS -m $ITERATIONS -q $QUALITY -strategy $STRATEGY

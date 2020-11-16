@@ -13,6 +13,7 @@ trait Stats {
   val beta: Double
   val M: Int
   protected var M_variable: Int = 30
+  protected var iterationResults: List[Double] = null
 
   def setM(M: Int): Unit = {
     M_variable = M
@@ -42,6 +43,8 @@ trait Stats {
     val after_t = StopWatch.stop()._1
     (c, after_t - prev_t, variance)
   }
+
+  def getIterationResults(): List[Double] = iterationResults
 
   /**
     * @param m A data set (row oriented)
