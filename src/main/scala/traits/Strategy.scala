@@ -20,7 +20,7 @@ trait Strategy extends Repeatable {
     var m: Int = 10
     protected var epsilon = 0.03
     protected var sleep = 0.0 // [ms]
-    protected val burnInPhaseLength = 10
+    protected val burnInPhaseLength = 3
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int = {
         val dM = -bound.dM(solution, eps = epsilon)

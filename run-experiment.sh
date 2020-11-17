@@ -46,7 +46,7 @@ if [[ ! "$FILE" ]]; then
 fi
 
 if [[ ! "$EXPERIMENT" ]]; then
-	echo "Error, please provide the experiment via '-e exp_id'! Possible options are 't-over-m' and 'anygrad'"
+	echo "Error, please provide the experiment via '-E exp_id'! Possible options are 't-over-m', 'singlerun' and 'comparison'"
 	echo ""
 	exit -1
 fi
@@ -74,7 +74,7 @@ fi
 
 if [[ ! "$EPS" ]]; then
 	echo "Warning, epsilon not specified, using default of 0.03."
-	echo "You can specify epsilon using '-eps'."
+	echo "You can specify epsilon using '-e'."
 	echo ""
 	EPS=0.03
 fi

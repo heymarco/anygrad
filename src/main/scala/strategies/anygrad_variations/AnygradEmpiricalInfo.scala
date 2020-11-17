@@ -108,7 +108,7 @@ class AnygradEmpiricalInfo extends Strategy {
                 totalIterations = totalIterations + iterations
                 val T = StopWatch.stop()._1 - T_start
                 val quality = 1 - bound.value(updated_result, epsilon)
-                performanceObserver.enqueue((updated_result._2, quality), at = i, maxSize = burnInPhaseLength)
+                performanceObserver.enqueue((updated_result._2, quality), at = i)
                 val utility = utility_function.compute(updated_result)
                 wait_nonblocking(sleep)
                 timer.track_end_time()
