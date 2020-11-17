@@ -145,8 +145,7 @@ trait Strategy extends Repeatable {
             }
             totalRoundOverhead += timer.getRoundOverheadPerTarget()
         }
-        println("Total runtime = %s".format(StopWatch.stop()._1 - T_start))
-        println("Total round overhead = %s".format(totalRoundOverhead))
+        printStatistics(StopWatch.stop()._1 - T_start, totalRoundOverhead)
         getUpperTriangle(results)
     }
 
@@ -160,4 +159,9 @@ trait Strategy extends Repeatable {
     }
 
     protected def burnInPhaseFinished(roundIndex: Int): Boolean = roundIndex >= burnInPhaseLength
+
+    protected def printStatistics(totalRuntime: Double, totalRoundOverhead: Double): Unit = {
+        println("Total runtime of %s = %s".format(name, totalRuntime))
+        println("Total round overhead of %s = %s".format(name, totalRoundOverhead))
+    }
 }

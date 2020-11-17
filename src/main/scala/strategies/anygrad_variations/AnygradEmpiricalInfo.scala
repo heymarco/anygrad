@@ -138,8 +138,7 @@ class AnygradEmpiricalInfo extends Strategy {
             }
             totalRoundOverhead += timer.getRoundOverheadPerTarget()
         }
-        println("Total runtime = %s".format(StopWatch.stop()._1 - T_start))
-        println("Total round overhead = %s".format(totalRoundOverhead))
+        printStatistics(StopWatch.stop()._1 - T_start, totalRoundOverhead)
         getUpperTriangle(results)
     }
 }
