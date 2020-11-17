@@ -9,6 +9,8 @@ import traits.Repeatable
 
 class ToverM extends Experiment {
     val m_list = Array(1, 4, 16, 64, 256)
+    val name = "T over M"
+
     def init_strategies() = {
         strategies = Array[Repeatable]()
         for (m <- m_list) {

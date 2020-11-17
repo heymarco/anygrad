@@ -8,6 +8,8 @@ import traits.Repeatable
 
 class AnygradComparison extends Experiment {
     val m_list: Array[Int] = Array(10, 50, 100)
+    val name = "Comparison"
+
     def init_strategies() = {
         strategies = Array[Repeatable]()
         for (m <- m_list) {

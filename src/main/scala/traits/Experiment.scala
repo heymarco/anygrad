@@ -11,6 +11,7 @@ trait Experiment {
     var file_dir = ""
     var sleep = 0.0
     var q = 0.9
+    protected val name: String
 
     def init_strategies()
 
@@ -32,6 +33,7 @@ trait Experiment {
     }
 
     def run(args: Map[String, String]) = {
+        printName()
         setup(args)
         init_strategies()
         // load data
@@ -53,5 +55,9 @@ trait Experiment {
                 val _ = strategy.repeat_strategy(data, N, write=true, target_dir=target_dir) // data, n, write
             })
         }
+    }
+
+    def printName(): Unit = {
+        println("Executing experiment '%s'".format(name))
     }
 }

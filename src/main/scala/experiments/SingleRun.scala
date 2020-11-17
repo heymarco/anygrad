@@ -7,7 +7,8 @@ import traits.{Experiment, Repeatable, Strategy}
 
 class SingleRun extends Experiment {
     var m = 8
-    var strategy_id = "baseline"
+    private var strategy_id = ""
+    val name = "Single run"
 
     override def setup(args: Map[String, String]): Unit = {
         super.setup(args)
@@ -29,8 +30,11 @@ class SingleRun extends Experiment {
         else if ("anygrad_ei".equals(strategy_id)) {
             new AnygradEmpiricalInfo
         }
-        else {
+        else if ("baseline".equals(strategy_id)) {
             new Baseline
+        }
+        else {
+            throw new Error("No valid strategy identifier provided")
         }
         strategy.m = m
         strategies :+= strategy
