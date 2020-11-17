@@ -45,7 +45,7 @@ object Main extends LazyLogging {
             println("Executing experiment 't-over-m'")
             new ToverM()
         }
-        else if (args_map("-e") == "anygrad") {
+        else if (args_map("-e") == "comparison") {
             println("Executing experiment 'anygrad'")
             new AnygradComparison()
         }
