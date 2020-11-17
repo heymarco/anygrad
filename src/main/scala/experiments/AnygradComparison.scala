@@ -1,12 +1,13 @@
 package experiments
 
-import strategies.{AnyGradSelectAll, AnyGrad, Baseline}
+import strategies.anygrad_variations.{AnyGradSelectProbability, AnygradEmpiricalInfo}
+import strategies.{AnyGrad, AnyGradSelectAll, Baseline}
 import traits.Experiment
 import traits.Repeatable
 
 
 class AnygradComparison extends Experiment {
-    val m_list: Array[Int] = Array(2, 10, 50, 100)
+    val m_list: Array[Int] = Array(10, 50, 100)
     def init_strategies() = {
         strategies = Array[Repeatable]()
         for (m <- m_list) {
@@ -14,9 +15,8 @@ class AnygradComparison extends Experiment {
             strategy.m = m
             strategies :+= strategy
         }
-        val anygrad_sa = new AnyGradSelectAll()
-        strategies :+= anygrad_sa
-        val anygrad = new AnyGrad()
-        strategies :+= anygrad
+        strategies :+= new AnyGradSelectAll
+        strategies :+= new AnyGradSelectProbability
+        strategies :+= new AnygradEmpiricalInfo
     }
 }

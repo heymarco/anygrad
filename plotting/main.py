@@ -15,6 +15,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     data = load_all_in_dir(args.dir)
     df = prepare_df(data)
-    plot_df(df, "duration", "quality", fill_between=False)
+    plot_df(df, "duration", "m", fill_between=False)
     plt.show()
 
