@@ -110,9 +110,6 @@ trait Strategy extends Repeatable {
                 val p = targets(i)
                 val current_result = round_results(p._1)(p._2)._1
                 val (tSwitch, t1) = timer.getTimeModelForTarget(i)
-                if (i == 0) {
-                    println(tSwitch / t1)
-                }
                 val iterations = if (burnInPhaseFinished(r)) { get_m(current_result, tSwitch, t1) } else { m }
                 val (dependency_update, time, variance) = estimators(i).run(pdata, Set(p._1, p._2), iterations)
                 val result = (dependency_update, iterations, variance)
