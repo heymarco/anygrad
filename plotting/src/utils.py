@@ -54,6 +54,11 @@ def running_mean(arr, window_size):
     return series.rolling(window=window_size).mean().to_numpy()
     # return np.convolve(arr, np.ones((window_size,)) / window_size, mode='valid')
 
+def running_median(arr, window_size):
+    series = pd.Series(arr)
+    return series.rolling(window=window_size).median().to_numpy()
+    # return np.convolve(arr, np.ones((window_size,)) / window_size, mode='valid')
+
 
 def running_std(arr, window_size):
     series = pd.Series(arr)

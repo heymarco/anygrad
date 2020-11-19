@@ -18,6 +18,7 @@ trait Repeatable {
 
     def repeat_strategy(data: Array[Array[Double]], N: Int, write: Boolean = true, target_dir: String): Array[Array[Array[Array[Snapshot]]]] = {
         var result_buffer = ArrayBuffer[Array[Array[Array[Snapshot]]]]()
+        val _ = run(data, until = max_result_quality)  // cold start run
         for (i <- 0 until N) {
             val result = run(data, until = max_result_quality)
             result_buffer.append(result)

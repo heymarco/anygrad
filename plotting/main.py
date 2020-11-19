@@ -1,4 +1,5 @@
 import argparse
+import os
 import json
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,6 +16,12 @@ if __name__ == '__main__':
     args = parser.parse_args()
     data = load_all_in_dir(args.dir)
     df = prepare_df(data)
-    plot_df(df, "duration", "m", fill_between=False)
-    plt.show()
 
+    x_list = ["duration", "iterations"]
+    y_list = ["result", "utility", "quality", "m"]
+
+    for x in x_list:
+        for y in y_list:
+            plot_df(df, x, y, fill_between=False)
+            plt.savefig(os.path.join(args.dir, "{}_{}.pdf".format(x, y)))
+            plt.clf()

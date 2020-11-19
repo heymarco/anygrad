@@ -8,5 +8,5 @@ import traits.Utility
 import utils.types._
 
 class Identity extends Utility {
-    override def compute(s: (Double, Int, (Int, Double, Double)), w: Double): Double = { w * s._1 }
+    override def compute(s: (Double, Int, (Int, Double, Double)), w: Double): Double = { w * 2*(s._1 - 0.5) }  //TODO: MCDE only gives values between 0.5 and 1
 }

@@ -3,7 +3,7 @@ package utils
 import scala.collection.mutable.Queue
 import io.github.edouardfouche.utils.StopWatch
 
-class MeasuresSwitchingTime(numTargets: Int) {
+class ComputationOverheadTracker(numTargets: Int) {
 	private var start_time = 0.0		// the time the round started
 	private var end_time = 0.0			// the time the round ended
 

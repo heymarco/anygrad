@@ -2,7 +2,7 @@ package strategies.anygrad_variations
 
 import io.github.edouardfouche.utils.StopWatch
 import traits.Strategy
-import utils.{MeasuresSwitchingTime, PerformanceObserver}
+import utils.{ComputationOverheadTracker, PerformanceObserver}
 import utils.helper.{default_snapshot, update_solution, wait_nonblocking}
 import utils.types.{Snapshot, Solution}
 
@@ -30,9 +30,8 @@ class AnygradEmpiricalInfo extends Strategy {
      */
     override def select_active_targets(until: Double,
                                        targets: ArrayBuffer[(Int, Int)],
-                                       results: Array[Array[Snapshot]],
-                                       roundOverhead: Double): Array[Int] = {
-        val activeTargetIndices = super.select_active_targets(until, targets, results, roundOverhead = roundOverhead)
+                                       results: Array[Array[Snapshot]]): Array[Int] = {
+        val activeTargetIndices = super.select_active_targets(until, targets, results)
         if (activeTargetIndices.isEmpty) {
             return activeTargetIndices
         }
@@ -83,13 +82,11 @@ class AnygradEmpiricalInfo extends Strategy {
         var active_targets = Array[Int]()
         var totalIterations = 0
         var r = 0
-        var t_cs = Double.NaN
-        var t_1 = Double.NaN
         val default_solution: Solution = (0.0, 0, (0, 0.0, 0.0))
         val T_start = StopWatch.stop()._1
-        val timer = new MeasuresSwitchingTime()
         var totalRoundOverhead = 0.0
         var round_timestamp = StopWatch.stop()._1
+        val timer = new ComputationOverheadTracker(targets.length)
         active_targets = targets.indices.toArray
         results.append(
             Array.fill[Snapshot](num_elements, num_elements)(default_snapshot(default_solution, bound=bound, eps=epsilon))
@@ -98,10 +95,14 @@ class AnygradEmpiricalInfo extends Strategy {
             val iterating_start = StopWatch.stop()._1
             val round_results = results.last.map(_.clone())
             for (i <- active_targets) {
-                timer.track_start_time()
+                timer.setSignalStart()
                 val p = targets(i)
                 val current_result = round_results(p._1)(p._2)._1
-                val iterations = if (burnInPhaseFinished(r)) { get_m(performanceObserver, i, t_cs, t_1) } else { m }
+                val (tSwitch, t1) = timer.getTimeModelForTarget(at = i)
+                if (i == 0) {
+                    println(tSwitch / t1)
+                }
+                val iterations = if (burnInPhaseFinished(r)) { get_m(performanceObserver, i, tSwitch, t1) } else { m }
                 val (dependency_update, time, variance) = estimators(i).run(pdata, Set(p._1, p._2), iterations)
                 val result = (dependency_update, iterations, variance)
                 val updated_result = update_solution(current_result, result)
@@ -111,13 +112,12 @@ class AnygradEmpiricalInfo extends Strategy {
                 performanceObserver.enqueue((updated_result._2, quality), at = i)
                 val utility = utility_function.compute(updated_result)
                 wait_nonblocking(sleep)
-                timer.track_end_time()
-                val measurement = timer.calculate_switching_time(time, iterations)
-                t_cs = measurement._1
-                t_1 = measurement._2
+                timer.setSignalEnd()
+                timer.updateTimeModelParameters(target = i, algDuration = time, m = iterations)
                 val new_snapshot: Snapshot = (
                     updated_result, quality, utility,
-                    totalIterations, T, iterations, t_cs, t_1
+                    totalIterations, T, iterations,
+                    tSwitch, t1
                 )
                 round_results(p._1)(p._2) = new_snapshot
                 round_results(p._2)(p._1) = new_snapshot
@@ -126,17 +126,16 @@ class AnygradEmpiricalInfo extends Strategy {
             results.append(round_results)
             val round_processing_time = StopWatch.stop()._1 - round_timestamp - iterating_duration
             round_timestamp = StopWatch.stop()._1
-            timer.track_round_processing_overhead(round_processing_time, active_targets.size)
+            timer.trackRoundOverheadPerTarget(round_processing_time / active_targets.length)
             r = r + 1
+            totalRoundOverhead += timer.getTotalRoundOverhead(active_targets.length)
             if (burnInPhaseFinished(r)) {
                 active_targets = select_active_targets(
                     until = until,
                     targets = targets,
-                    results = results.last,
-                    roundOverhead = timer.getTotalRoundOverhead()
+                    results = results.last
                 )
             }
-            totalRoundOverhead += timer.getRoundOverheadPerTarget()
         }
         printStatistics(StopWatch.stop()._1 - T_start, totalRoundOverhead)
         getUpperTriangle(results)

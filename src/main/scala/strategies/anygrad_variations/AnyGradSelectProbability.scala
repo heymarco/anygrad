@@ -25,13 +25,11 @@ class AnyGradSelectProbability extends Strategy {
      */
     override def select_active_targets(until: Double,
                                        targets: ArrayBuffer[(Int, Int)],
-                                       results: Array[Array[Snapshot]],
-                                       roundOverhead: Double): Array[Int] = {
-        val activeTargetIndices = super.select_active_targets(until, targets, results, roundOverhead = roundOverhead)
+                                       results: Array[Array[Snapshot]]): Array[Int] = {
+        val activeTargetIndices = super.select_active_targets(until, targets, results)
         if (activeTargetIndices.isEmpty) {
             return activeTargetIndices
         }
-        val numActiveTargets = activeTargetIndices.length
         var minGradient = Double.MaxValue
         var maxGradient = Double.MinValue
         // println(String.format("data_%s = [", i))

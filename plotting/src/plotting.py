@@ -23,7 +23,6 @@ def prepare_df(data_dict):
         _t1 = np.nanmean(t1(data), axis=(-1, -2)).flatten()
 
         ws = num_reps * 3
-        print(running_std(_utility, window_size=ws))
 
         sorted_indices = np.argsort(_duration)
         duration_mean = running_mean(_duration[sorted_indices], window_size=ws)
@@ -110,7 +109,7 @@ def prepare_df(data_dict):
 
 
 def plot_df(df, x, y, add_x="", add_y="", window_size=100, fill_between=True):
-    sns.lineplot(x=x, y=y, data=df, hue="Strategy", style="Strategy")
+    sns.lineplot(x=x, y=y, data=df, hue="Strategy")
     all_lines = plt.gca().get_lines()
     if not fill_between:
         return

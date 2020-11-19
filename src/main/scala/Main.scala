@@ -29,7 +29,6 @@ object Main extends LazyLogging {
     def main(args: Array[String]): Unit = {
         val unit = "ms"
 
-
         info("Working directory: " + System.getProperty("user.dir"))
         info("Raw parameters given: " + args.map(s => "\"" + s + "\"").mkString("[", ", ", "]"))
 
@@ -42,11 +41,9 @@ object Main extends LazyLogging {
             if ( i % 2 == 0) { args_map = args_map + (args(i) -> args(i + 1)) }
         }
         val experiment = if (args_map("-e") == "t-over-m") {
-            println("Executing experiment 't-over-m'")
             new ToverM()
         }
         else if (args_map("-e") == "comparison") {
-            println("Executing experiment 'anygrad'")
             new AnygradComparison()
         }
         else if (args_map("-e") == "singlerun") {
