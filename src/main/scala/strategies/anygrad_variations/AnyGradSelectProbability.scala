@@ -32,20 +32,17 @@ class AnyGradSelectProbability extends Strategy {
         }
         var minGradient = Double.MaxValue
         var maxGradient = Double.MinValue
-        // println(String.format("data_%s = [", i))
         val allGradients = activeTargetIndices.map(
             index => {
                 val thisTarget = targets(index)
                 val result = results(thisTarget._1)(thisTarget._2)
                 val utility = result._3
                 val gradient = -bound.dM(result._1, eps = epsilon) * utility
-                // println(String.format("%s, ", i))
                 i += 1
-                minGradient = if (gradient < minGradient) { gradient } else { minGradient }
-                maxGradient = if (gradient > maxGradient) { gradient } else { maxGradient }
+                minGradient = if (gradient < minGradient) gradient else minGradient
+                maxGradient = if (gradient > maxGradient) gradient else maxGradient
                 gradient
             })
-        // println("]")
         if (maxGradient == minGradient) { // All gradients are equal
             return activeTargetIndices
         }
@@ -54,7 +51,6 @@ class AnyGradSelectProbability extends Strategy {
                 (allGradients(index) - minGradient)/(maxGradient - minGradient) >= nextFloat()
             }
         }.map(_._1)
-        // println(String.format("%s, ", filteredActiveTargetIndices.length.toDouble/numActiveTargets))
         filteredActiveTargetIndices
     }
 }
