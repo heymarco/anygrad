@@ -46,6 +46,8 @@ trait Strategy extends Repeatable {
         val B = 0.5*ddM
         val C = t_cs
         val D = t_1
+        // enter this in wolfram alpha:
+        // ((a+2*x*b)(c+x*d)-(x*a+x^2*b)*d)/((c+x*d)^2) = 0
         val m_opt = (-C + D*sqrt((C*(B*C - A*D))/(B*D*D)))/D
         val result = max(1, (m_opt * x).ceil.toInt)
         result
