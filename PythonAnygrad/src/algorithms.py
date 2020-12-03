@@ -108,7 +108,7 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
         for i in range(num_iterations):
             print("Batch {}".format(i))
             batch, _ = next(iter(X))
-            batch.to(self.device)
+            batch = batch.to(self.device)
             self.alg.optimizer.zero_grad()
             pred = self.alg.forward(batch)
             self.alg.loss(pred, batch).backward()
@@ -120,7 +120,7 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
         with torch.no_grad():
             self.alg.eval()
             for data, _ in iter(X):
-                data.to(self.device)
+                data = data.to(self.device)
                 pred = self.alg.forward(data)
                 total_loss += self.alg.loss(pred, data).item()
         return total_loss
