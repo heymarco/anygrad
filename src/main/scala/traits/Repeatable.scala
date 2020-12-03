@@ -31,6 +31,10 @@ trait Repeatable {
         result_arr
     }
 
+    def to_csv(result: Array[Array[Array[Array[Snapshot]]]]) = {
+        // rep
+    }
+
     def convert_to_json(result: Array[Array[Array[Array[Snapshot]]]]): String = { // run, round, matrix
         val result_array = ArrayBuffer[Array[Array[Array[Map[String, Double]]]]]()
         for (run <- result) {

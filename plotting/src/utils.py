@@ -30,7 +30,7 @@ def parse_array(from_json):
     return data_array
 
 
-def load_all_in_dir(directory):
+def load_all_json_in_dir(directory):
     (_, _, filenames) = next(os.walk(directory))
     filenames = [fn for fn in filenames if fn.endswith(".json")]
     files = {}
@@ -39,6 +39,17 @@ def load_all_in_dir(directory):
         j = json.load(open(filepath))
         files[fn] = parse_array(j)
     return files
+
+
+def load_all_csv_in_dir(directory):
+    (_, _, filenames) = next(os.walk(directory))
+    filenames = [fn for fn in filenames if fn.endswith(".csv")]
+    files = {}
+    for fn in filenames:
+        filepath = os.path.join(directory, fn)
+        fn = fn[:-4]
+        files[fn] = pd.read_csv(filepath, sep=";", index_col=False)
+    return pd.concat(files).reset_index(level=0).rename(columns={'level_0':'strategy'})
 
 
 def aggregate_rounds(df):

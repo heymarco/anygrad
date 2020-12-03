@@ -25,9 +25,9 @@ trait Strategy extends Repeatable {
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int = {
         val dM = -bound.dM(solution, eps = epsilon)
         val ddM = -bound.ddM(solution, eps = epsilon)
-//        println("***")
-//        println("ratio gradient  = %s".format(dM/ddM))
-//        println("ratio time  = %s".format(t_cs/t_1))
+        println("***")
+        println("ratio gradient  = %s".format(dM/ddM))
+        println("ratio time  = %s".format(t_cs/t_1))
         get_m(dM, ddM, t_cs, t_1)
     }
 
@@ -35,9 +35,9 @@ trait Strategy extends Repeatable {
               t_cs: Double, t_1: Double): Int = {
         val dM = performanceObserver.get1stDerivationApproximation(targetIndex)
         val ddM = performanceObserver.get2ndDerivationApproximation(targetIndex)
-//        println("***")
-//        println("ratio gradient  = %s".format(dM/ddM))
-//        println("ratio time  = %s".format(t_cs/t_1))
+        println("***")
+        println("ratio gradient  = %s".format(dM/ddM))
+        println("ratio time  = %s".format(t_cs/t_1))
         get_m(dM, ddM, t_cs, t_1)
     }
 

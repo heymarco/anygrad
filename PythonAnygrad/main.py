@@ -1,9 +1,8 @@
 from argparse import ArgumentParser
-from src.Experiment import experiment_factory
+from src.experiment import create_kmeans_experiment, create_mlp_experiment, create_cifar_experiment
 import numpy as np
 
 from sklearn.datasets import load_digits, fetch_openml
-from sklearn.preprocessing import scale, MinMaxScaler
 
 
 if __name__ == '__main__':
@@ -11,7 +10,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("-data_dir", type=str, required=True)
     parser.add_argument("-reps", type=int, required=True)
-    parser.add_argument("-E", type=str, required=True, choices=("mlp", "kmeans_batch"))
+    parser.add_argument("-E", type=str, required=True, choices=("mlp", "kmeans_batch", "cifar"))
     parser.add_argument("-N", type=int, required=True, help="The number of targets")
     parser.add_argument("-sleep", type=float, default=0.0)
     args = parser.parse_args()
@@ -24,11 +23,20 @@ if __name__ == '__main__':
 
     num_targets = args.N
 
-    experiment = experiment_factory(args.E,
-                                    data=[X],
-                                    targets=[i for i in range(num_targets)],
-                                    num_reps=args.reps,
-                                    file_dir="", target_dir="save",
-                                    sleep=args.sleep,
-                                    parallel=False)
+    if args.E == "kmeans_batch":
+        experiment = create_kmeans_experiment(num_targets=num_targets,
+                                              num_reps=args.reps,
+                                              target_dir="save",
+                                              sleep=args.sleep)
+    elif args.E == "mlp":
+        experiment = create_mlp_experiment(num_targets=num_targets,
+                                           num_reps=args.reps,
+                                           target_dir="save",
+                                           sleep=args.sleep)
+    elif args.E == "cifar":
+        experiment = create_cifar_experiment(num_targets=num_targets,
+                                             num_reps=args.reps,
+                                             target_dir="save",
+                                             sleep=args.sleep)
+
     experiment.run()

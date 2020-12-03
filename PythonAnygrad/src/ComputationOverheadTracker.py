@@ -22,9 +22,9 @@ class ComputationOverheadTracker:
         if len(self.time_model_queues[at]) > queue_max_size:
             self.time_model_queues[at] = self.time_model_queues[at][-queue_max_size:]
 
-    def track_round_overhead_per_target(self, overhead_per_target: float,
-                                        queue_max_size: int = 30):
-        self.round_overhead_queue = np.append(self.round_overhead_queue, overhead_per_target)
+    def track_round_overhead(self,overhead: float,
+                             queue_max_size: int = 10):
+        self.round_overhead_queue = np.append(self.round_overhead_queue, overhead)
         if len(self.round_overhead_queue) > queue_max_size:
             self.round_overhead_queue = self.round_overhead_queue[-queue_max_size:]
 
@@ -41,22 +41,22 @@ class ComputationOverheadTracker:
         t_switch += delta_diff
         self.__enqueue_switching_time__(new_value=(t_switch, t1), at=target)
 
-    def get_time_model_for_target(self, at: int):
+    def get_time_model_for_target(self, at: int, num_active_targets: int):
         if not len(self.time_model_queues[at]):
             return np.nan, np.nan
         t_switch = self.time_model_queues[at][:, 0]
         t1 = self.time_model_queues[at][:, 1]
-        t_switch = t_switch.sum() / len(t_switch) + self.get_round_overhead_per_target()
+        t_switch = t_switch.sum() / len(t_switch) + self.get_round_overhead_per_target(num_targets=num_active_targets)
         t1 = t1.sum() / len(t1)
         return t_switch, t1
 
-    def get_round_overhead_per_target(self):
+    def get_round_overhead_per_target(self, num_targets: int):
+        return self.get_total_round_overhead() / num_targets
+
+    def get_total_round_overhead(self):
         if not len(self.round_overhead_queue):
             return 0.0
         return self.round_overhead_queue.sum() / len(self.round_overhead_queue)
-
-    def get_total_round_overhead(self, num_active_targets: int):
-        return self.get_round_overhead_per_target() * num_active_targets
 
     def set_signal(self):
         self.start_time = self.end_time

@@ -13,7 +13,7 @@ class Plotter:
         self.num_targets = num_targets
         self.palette = sns.cubehelix_palette(n_colors=num_colors, start=.5, rot=-.75)
 
-    def add_to_subplot(self, x, y, ax_index: int, color_index: int, marker="o"):
+    def add_to_subplot(self, x, y, ax_index: int, color_index: int, marker=""):
         if self.num_rows > 1 and self.num_cols == 1:
             ax = self.axes[ax_index]
         elif self.num_cols > 1 and self.num_rows == 1:
@@ -24,7 +24,7 @@ class Plotter:
             row = int(ax_index / self.num_cols)
             col = ax_index % row
             ax = self.axes[row, col]
-        ax.plot(x, y, marker=marker, c=self.palette[color_index], alpha=0.9)
+        ax.step(x, y, marker=marker, c=self.palette[color_index], alpha=0.9)
 
     def add_legend(self, labels):
         if self.num_rows == 1 and self.num_cols == 1:
@@ -57,5 +57,4 @@ class Plotter:
     def save(self, fp):
         plt.tight_layout()
         plt.savefig(fp)
-        # plt.clf()
 

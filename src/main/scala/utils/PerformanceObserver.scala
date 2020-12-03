@@ -30,6 +30,7 @@ class PerformanceObserver(numTargets: Int) {
         val diffX = getDiff(getIterations(thisQueue)).map(_.toDouble)
         val y = diffY.zipWithIndex.map { case (value, index) => value / diffX(index) }
         regressor.fit(getX(thisQueue), y)
+        print(getX(thisQueue).size, y.size)
         regressor.getSlope
     }
 
