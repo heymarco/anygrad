@@ -122,7 +122,7 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
             for data, _ in iter(X):
                 data = data.to(self.device)
                 pred = self.alg.forward(data)
-                total_loss += self.alg.loss(pred, data).item()
+                total_loss -= self.alg.loss(pred, data).item()
         return total_loss
 
     def should_terminate(self, *args, **kwargs) -> bool:
@@ -130,7 +130,9 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
 
     def __get_device__(self):
         if torch.cuda.is_available():
+            print("Running on GPU")
             device = 'cuda:0'
         else:
+            print("Running on CPU")
             device = 'cpu'
         return device
