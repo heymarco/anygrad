@@ -6,7 +6,7 @@ class IterativeAlgorithm(ABC):
 
     def __init__(self):
         self.batch_size = None
-        self.start_time = process_time()
+        self.start_time = None
 
     @abstractmethod
     def partial_fit(self, X, num_iterations: int):
@@ -19,4 +19,7 @@ class IterativeAlgorithm(ABC):
     @abstractmethod
     def should_terminate(self, *args, **kwargs) -> bool:
         pass
+
+    def set_start_time(self):
+        self.start_time = process_time()
 
