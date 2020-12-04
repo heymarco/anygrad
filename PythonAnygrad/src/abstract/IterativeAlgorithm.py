@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
+from time import process_time
 
 
 class IterativeAlgorithm(ABC):
 
     def __init__(self):
         self.batch_size = None
+        self.start_time = process_time()
 
     @abstractmethod
     def partial_fit(self, X, num_iterations: int):
