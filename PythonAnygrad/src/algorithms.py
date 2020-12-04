@@ -50,7 +50,6 @@ class MLPAlg(IterativeAlgorithm):
                                 learning_rate_init=learning_rate)
         self.validation_data = None
         self.train_data = None
-        np.random.seed(self.random_state)
 
     def partial_fit(self, X, num_iterations: int):
         self.total_iterations += num_iterations
@@ -92,7 +91,6 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
                                    learning_rate=learning_rate)
         self.validation_data = None
         self.train_data = None
-        np.random.seed(self.random_state)
         self.device = self.__get_device__()
         self.alg.to(self.device)
 
