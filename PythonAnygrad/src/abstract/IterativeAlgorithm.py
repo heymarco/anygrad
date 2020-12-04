@@ -17,6 +17,10 @@ class IterativeAlgorithm(ABC):
         pass
 
     @abstractmethod
+    def warm_up(self, X):
+        pass
+
+    @abstractmethod
     def should_terminate(self, *args, **kwargs) -> bool:
         pass
 

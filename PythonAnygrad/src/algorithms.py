@@ -31,6 +31,9 @@ class MiniBatchKMeansAlg(IterativeAlgorithm):
         labels = self.alg.predict(X)
         return silhouette_score(X, labels)
 
+    def warm_up(self, X):
+        self.alg.partial_fit(X[self.n_clusters])
+
     def should_terminate(self, *args, **kwargs) -> bool:
         return self.total_iterations > 60
 
@@ -66,6 +69,9 @@ class MLPAlg(IterativeAlgorithm):
         #     self.alg.partial_fit(d, d)
         duration = process_time() - start
         return duration
+
+    def warm_up(self, X):
+        self.alg.partial_fit(X[:self.batch_size], X[:self.batch_size])
 
     def validate(self, X):
         prediction = self.alg.predict(X)
@@ -108,6 +114,9 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
             self.alg.loss(pred, batch).backward()
             self.alg.optimizer.step()
         return process_time() - start
+
+    def warm_up(self, X):
+        pass
 
     def validate(self, X):
         total_loss = 0.0

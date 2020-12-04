@@ -53,11 +53,18 @@ class Strategy(ABC):
         total_round_overhead = 0.0
         t_start = process_time()
         t_round = t_start
-        results = [[default_snapshot() for _ in range(len(targets))]]
 
         timer.init_time()
 
+        results = [[]]
         [alg.set_start() for alg in self.algorithms]
+        [alg.warm_up(self.__get_data__(train_data, at=i)) for i, alg in enumerate(self.algorithms)]
+        for i, alg in enumerate(self.algorithms):
+            value = alg.validate(X=self.__get_data__(val_data, at=i))
+            snapshot = default_snapshot()
+            snapshot.value = value
+            snapshot.global_time = t_start
+            results[0].append(snapshot)
 
         while len(active_targets):
             iterating_start = process_time()
