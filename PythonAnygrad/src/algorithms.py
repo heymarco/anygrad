@@ -11,16 +11,15 @@ from torch.utils.data import DataLoader
 
 
 class MiniBatchKMeansAlg(IterativeAlgorithm):
-    def __init__(self, n_clusters: int, seed: int, batch_size: int = 100, init_mode: str = "random"):
+    def __init__(self, n_clusters: int, batch_size: int = 100, init_mode: str = "random"):
         super(MiniBatchKMeansAlg, self).__init__()
         self.n_clusters = n_clusters
         self.batch_size = batch_size
         self.init_mode = init_mode
         self.total_iterations: int = 0
-        self.seed = seed
         self.alg = MiniBatchKMeans(n_clusters=self.n_clusters, init=self.init_mode,
                                    max_iter=1, batch_size=self.batch_size, max_no_improvement=False,
-                                   random_state=seed, compute_labels=False)
+                                   compute_labels=False)
 
     def partial_fit(self, X, num_iterations: int):
         self.total_iterations += num_iterations
@@ -37,19 +36,17 @@ class MiniBatchKMeansAlg(IterativeAlgorithm):
 
 
 class MLPAlg(IterativeAlgorithm):
-    def __init__(self, neurons_hidden, learning_rate: float, batch_size: int = 32, random_state: int = 0):
+    def __init__(self, neurons_hidden, learning_rate: float, batch_size: int = 32):
         super(MLPAlg, self).__init__()
         self.neurons_hidden = neurons_hidden
         self.total_iterations: int = 0
         self.batch_size = batch_size
         self.learning_rate = learning_rate
-        self.random_state = random_state
         self.alg = MLPRegressor(hidden_layer_sizes=neurons_hidden,
                                 activation='tanh',
                                 solver='sgd',
                                 batch_size=batch_size,
                                 learning_rate="constant",
-                                random_state=random_state,
                                 learning_rate_init=learning_rate)
         self.validation_data = None
         self.train_data = None
@@ -84,13 +81,12 @@ class MLPAlg(IterativeAlgorithm):
 class ConvolutionalAEAlg(IterativeAlgorithm):
 
     def __init__(self, num_channels: int, num_filters: int, learning_rate: float,
-                 batch_size: int = 32, random_state: int = 0):
+                 batch_size: int = 32):
         super(ConvolutionalAEAlg, self).__init__()
         self.num_filters = num_filters
         self.total_iterations: int = 0
         self.batch_size = batch_size
         self.learning_rate = learning_rate
-        self.random_state = random_state
         self.alg = ConvolutionalAE(num_channels=num_channels,
                                    num_filters=num_filters,
                                    learning_rate=learning_rate)
@@ -126,7 +122,7 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
         return total_loss
 
     def should_terminate(self, *args, **kwargs) -> bool:
-        return process_time() - self.start_time > 60*5.
+        return process_time() - self.start_time > 60*3.
 
     def __get_device__(self):
         if torch.cuda.is_available():

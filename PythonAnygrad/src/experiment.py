@@ -13,6 +13,7 @@ from src.strategies import Anygrad, Baseline, AnygradSelectAll, AnygradOnlySelec
 from src.abstract.Strategy import Strategy
 from src.algorithms import MiniBatchKMeansAlg, MLPAlg, ConvolutionalAEAlg
 from src.utils.snapshot import snapshots_to_df
+from src.utils.helper import set_random_state
 
 baseline_iterations = 20
 
@@ -37,9 +38,13 @@ class Experiment:
         self.targets = targets
 
     def run(self):
+        random_seed = np.random.randint(low=0, high=100, size=self.num_reps)
         for strategy in self.strategies:
             copies = [copy.deepcopy(strategy) for _ in range(self.num_reps)]
-            result = [s.run(self.train_data, self.val_data, self.targets) for s in copies]
+            result = []
+            for i, strat in enumerate(copies):
+                set_random_state(random_seed[i])
+                result.append(strat.run(self.train_data, self.val_data, self.targets))
             df = snapshots_to_df(result)
             df.to_csv(path_or_buf=os.path.join(self.target_dir, strategy.name + ".csv"), sep=";", index=False)
             del copies
@@ -47,7 +52,6 @@ class Experiment:
 
 def create_kmeans_experiment(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
     X, _ = fetch_openml(name="cardiotocography", version=2, return_X_y=True)
-    random_seed = np.random.randint(0, 100)
     strategies = []
     scaler = MinMaxScaler()
     data = [scaler.fit_transform(X)]
@@ -107,7 +111,6 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     X, _ = fetch_openml(data_id=datasets["fmnist"], return_X_y=True)
     np.random.shuffle(X)
     X = X[:4000]
-    random_seed = np.random.randint(0, 100)
     strategies = []
     scaler = MinMaxScaler()
     data = [scaler.fit_transform(X)]
@@ -124,7 +127,7 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     grid = ParameterGrid(parameter_dict)
     grid = list(grid)[:num_targets]
     j = 0
-    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"], random_state=random_seed)
+    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"])
                   for params in grid]
     strategies.append(Baseline("Baseline (round robin, m={})".format(iterations),
                                algorithms=algorithms,
@@ -132,7 +135,7 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
                                burn_in_phase_length=burn_in_phase_length,
                                sleep=0.0))
     j += 1
-    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"], random_state=random_seed)
+    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"])
                   for params in grid]
     strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations),
                                algorithms=algorithms,
@@ -140,7 +143,7 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
                                burn_in_phase_length=burn_in_phase_length,
                                sleep=0.0))
     j += 1
-    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"], random_state=random_seed)
+    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"])
                   for params in grid]
     strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations * 5),
                                algorithms=algorithms,
@@ -148,7 +151,7 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
                                burn_in_phase_length=burn_in_phase_length,
                                sleep=0.0))
     j += 1
-    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"], random_state=random_seed)
+    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"])
                   for params in grid]
     strategies.append(AnygradSelectAll("Anygrad (no target selection)",
                                        algorithms=algorithms,
@@ -156,7 +159,7 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
                                        burn_in_phase_length=burn_in_phase_length,
                                        sleep=0.0))
     j += 1
-    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"], random_state=random_seed)
+    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"])
                   for params in grid]
     strategies.append(AnygradOnlySelection("Anygrad (m={})".format(baseline_iterations),
                                            algorithms=algorithms,
@@ -164,7 +167,7 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
                                            burn_in_phase_length=burn_in_phase_length,
                                            sleep=0.0))
     j += 1
-    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"], random_state=random_seed)
+    algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"])
                   for params in grid]
     strategies.append(Anygrad("Anygrad (full)", algorithms=algorithms,
                               iterations=iterations,
@@ -196,7 +199,6 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
     grid = ParameterGrid(parameter_dict)
     grid = list(grid)[:num_targets]
 
-    random_seed = np.random.randint(0, 100)
     iterations = 100
     baseline_iterations = [50, 100, 500]
     burn_in_phase_length = 3

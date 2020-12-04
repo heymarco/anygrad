@@ -20,6 +20,6 @@ class IterativeAlgorithm(ABC):
     def should_terminate(self, *args, **kwargs) -> bool:
         pass
 
-    def set_start_time(self):
+    def set_start(self):
         self.start_time = process_time()
 

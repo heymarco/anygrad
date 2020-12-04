@@ -57,7 +57,7 @@ class Strategy(ABC):
 
         timer.init_time()
 
-        [alg.set_start_time() for alg in self.algorithms]
+        [alg.set_start() for alg in self.algorithms]
 
         while len(active_targets):
             iterating_start = process_time()
