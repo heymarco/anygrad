@@ -246,9 +246,9 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
         ConvolutionalAEAlg(num_channels=3, num_filters=params["num_filters"], learning_rate=params["lr"])
         for params in grid
     ]
-    strategies.append(AnygradOnlySelection("Anygrad (m={})".format(baseline_iterations[j]),
+    strategies.append(AnygradOnlySelection("Anygrad (m={})".format(150),
                                            algorithms=algorithms,
-                                           iterations=baseline_iterations[j],
+                                           iterations=150,
                                            burn_in_phase_length=burn_in_phase_length,
                                            sleep=0.0))
     j += 1
