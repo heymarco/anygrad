@@ -58,7 +58,6 @@ class Strategy(ABC):
 
         results = [[default_snapshot() for _ in range(len(targets))]]
         [alg.set_start() for alg in self.algorithms]
-
         while len(active_targets):
             iterating_start = process_time()
             round += 1
