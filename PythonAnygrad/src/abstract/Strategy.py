@@ -63,7 +63,6 @@ class Strategy(ABC):
             value = alg.validate(X=self.__get_data__(val_data, at=i))
             snapshot = default_snapshot()
             snapshot.value = value
-            snapshot.global_time = t_start
             results[0].append(snapshot)
 
         while len(active_targets):

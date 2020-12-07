@@ -59,41 +59,41 @@ def create_kmeans_experiment(num_targets: int, num_reps: int, target_dir: str, s
     np.random.shuffle(num_clusters)
     j = 0
     iterations = 1
-    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i], seed=random_seed)
+    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i])
                   for i in range(num_targets)]
     strategies.append(Baseline("Baseline (round robin, m=1)",
                                algorithms=algorithms,
                                iterations=1,
                                burn_in_phase_length=3, sleep=sleep))
     j += 1
-    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i], seed=random_seed)
+    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i])
                   for i in range(num_targets)]
     strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations),
                                algorithms=algorithms,
                                iterations=baseline_iterations,
                                burn_in_phase_length=3, sleep=sleep))
     j += 1
-    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i], seed=random_seed)
+    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i])
                   for i in range(num_targets)]
     strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations * 5),
                                algorithms=algorithms,
                                iterations=baseline_iterations * 5,
                                burn_in_phase_length=3, sleep=sleep))
     j += 1
-    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i], seed=random_seed)
+    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i])
                   for i in range(num_targets)]
     strategies.append(AnygradSelectAll("Anygrad (no target selection)", algorithms=algorithms,
                                        iterations=iterations,
                                        burn_in_phase_length=3, sleep=sleep))
     j += 1
-    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i], seed=random_seed)
+    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i])
                   for i in range(num_targets)]
     strategies.append(AnygradOnlySelection("Anygrad (m={})".format(baseline_iterations),
                                            algorithms=algorithms,
                                            iterations=baseline_iterations,
                                            burn_in_phase_length=10, sleep=sleep))
     j += 1
-    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i], seed=random_seed)
+    algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i])
                   for i in range(num_targets)]
     strategies.append(Anygrad("Anygrad (full)", algorithms=algorithms,
                               iterations=iterations,
@@ -193,14 +193,15 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
     val_loader = torch.utils.data.DataLoader(val_data, batch_size=32, num_workers=0)
 
     parameter_dict = {
-        "lr": [0.001],
+        "lr": [0.001, 0.005, 0.01],
         "num_filters": [3, 6, 12]
     }
     grid = ParameterGrid(parameter_dict)
     grid = list(grid)[:num_targets]
+    grid = grid[:num_targets]
 
-    iterations = 100
-    baseline_iterations = [50, 100, 500]
+    iterations = 500
+    baseline_iterations = [100, 200, 500, 1000]
     burn_in_phase_length = 3
     strategies = []
     j = 0
