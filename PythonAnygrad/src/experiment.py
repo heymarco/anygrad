@@ -205,36 +205,17 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
     burn_in_phase_length = 3
     strategies = []
     j = 0
-    algorithms = [
-        ConvolutionalAEAlg(num_channels=3, num_filters=params["num_filters"], learning_rate=params["lr"])
-        for params in grid
-    ]
-    strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations[j]),
-                               algorithms=algorithms,
-                               iterations=baseline_iterations[j],
-                               burn_in_phase_length=burn_in_phase_length,
-                               sleep=0.0))
-    j += 1
-    algorithms = [
-        ConvolutionalAEAlg(num_channels=3, num_filters=params["num_filters"], learning_rate=params["lr"])
-        for params in grid
-    ]
-    strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations[j]),
-                               algorithms=algorithms,
-                               iterations=baseline_iterations[j],
-                               burn_in_phase_length=burn_in_phase_length,
-                               sleep=0.0))
-    j += 1
-    algorithms = [
-        ConvolutionalAEAlg(num_channels=3, num_filters=params["num_filters"], learning_rate=params["lr"])
-        for params in grid
-    ]
-    strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations[j]),
-                               algorithms=algorithms,
-                               iterations=baseline_iterations[j],
-                               burn_in_phase_length=burn_in_phase_length,
-                               sleep=0.0))
-    j += 1
+    for it in baseline_iterations:
+        algorithms = [
+            ConvolutionalAEAlg(num_channels=3, num_filters=params["num_filters"], learning_rate=params["lr"])
+            for params in grid
+        ]
+        strategies.append(Baseline("Baseline (round robin, m={})".format(it),
+                                   algorithms=algorithms,
+                                   iterations=it,
+                                   burn_in_phase_length=burn_in_phase_length,
+                                   sleep=0.0))
+        j += 1
     algorithms = [
         ConvolutionalAEAlg(num_channels=3, num_filters=params["num_filters"], learning_rate=params["lr"])
         for params in grid
