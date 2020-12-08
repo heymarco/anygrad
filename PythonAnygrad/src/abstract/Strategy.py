@@ -91,9 +91,16 @@ class Strategy(ABC):
                                                          derivation_1st=derivation_1st, derivation_2nd=derivation_2nd,
                                                          m_opt=m_list[i])
 
+                # Update results
+                global_time = process_time() - t_start
+                for result_index in range(len(results[-1])):
+                    # update timestamps of all copied results
+                    results[-1][result_index].total_time = global_time
+                    results[-1][result_index].total_iterations = total_iterations
+                # replace snapshot for newly improved target
                 snapshot = Snapshot(value=utility, total_iterations=total_iterations,
                                     time_on_target=last_snapshot.time_on_target + alg_duration,
-                                    global_time=process_time() - t_start,
+                                    global_time=global_time,
                                     iterations_on_target=total_iterations_on_target,
                                     incremental_iterations=m,
                                     t_switch=t_switch, t1=t1,
@@ -153,5 +160,7 @@ class Strategy(ABC):
         print("Total round overhead of {} = {}".format(self.name, total_round_overhead))
 
     def __get_data__(self, data, at: int):
-        if len(data) == 1: return data[0]
-        else: return data[at]
+        if len(data) == 1:
+            return data[0]
+        else:
+            return data[at]
