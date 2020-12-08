@@ -106,13 +106,12 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
         start = process_time()
         self.alg.train()
         for i in range(num_iterations):
-            print("Batch {}".format(i))
-            batch, _ = next(iter(X))
-            batch = batch.to(self.device)
-            self.alg.optimizer.zero_grad()
-            pred = self.alg.forward(batch)
-            self.alg.loss(pred, batch).backward()
-            self.alg.optimizer.step()
+            for batch, _ in X:
+                batch = batch.to(self.device)
+                self.alg.optimizer.zero_grad()
+                pred = self.alg.forward(batch)
+                self.alg.loss(pred, batch).backward()
+                self.alg.optimizer.step()
         return process_time() - start
 
     def warm_up(self, X):
