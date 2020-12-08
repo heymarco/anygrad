@@ -68,6 +68,7 @@ class Strategy(ABC):
                 current_train_data = self.__get_data__(train_data, at=i)
                 current_val_data = self.__get_data__(train_data, at=i)
                 m = m_list[i]
+                print(len(self.algorithms), i)
                 alg_duration = self.algorithms[i].partial_fit(current_train_data, num_iterations=m)
                 utility = self.algorithms[i].validate(current_val_data)
                 wait_nonblocking(duration=self.sleep)

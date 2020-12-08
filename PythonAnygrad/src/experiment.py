@@ -199,9 +199,10 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
     grid = ParameterGrid(parameter_dict)
     grid = list(grid)[:num_targets]
     grid = grid[:num_targets]
+    print(grid)
 
-    iterations = 500
-    baseline_iterations = [100, 200, 500, 1000]
+    iterations = 1
+    baseline_iterations = [1, 2, 4]
     burn_in_phase_length = 3
     strategies = []
     j = 0

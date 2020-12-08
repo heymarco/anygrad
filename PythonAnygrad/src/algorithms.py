@@ -106,7 +106,7 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
         start = process_time()
         self.alg.train()
         for i in range(num_iterations):
-            for batch in X:
+            for batch, _ in X:
                 batch = batch.to(self.device)
                 self.alg.optimizer.zero_grad()
                 pred = self.alg.forward(batch)
