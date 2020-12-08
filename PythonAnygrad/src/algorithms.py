@@ -129,7 +129,7 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
         return total_loss
 
     def should_terminate(self, *args, **kwargs) -> bool:
-        return process_time() - self.start_time > 60*3.
+        return process_time() - self.start_time > 60*15.
 
     def __get_device__(self):
         if torch.cuda.is_available():
