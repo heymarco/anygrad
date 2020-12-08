@@ -95,7 +95,7 @@ class Strategy(ABC):
                 global_time = process_time() - t_start
                 for result_index in range(len(results[-1])):
                     # update timestamps of all copied results
-                    results[-1][result_index].total_time = global_time
+                    results[-1][result_index].global_time = global_time
                     results[-1][result_index].total_iterations = total_iterations
                 # replace snapshot for newly improved target
                 snapshot = Snapshot(value=utility, total_iterations=total_iterations,
