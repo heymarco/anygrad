@@ -28,11 +28,11 @@ class PerformanceObserver:
 
     def get_2nd_derivation_approximation(self, for_target: int):
         return self.coefficient2[for_target]
-        this_queue = self.queues[for_target]
-        quality = this_queue[:, 1]
-        iterations = this_queue[:, 0]
-        diff_quality = np.diff(quality)
-        diff_iterations = np.diff(iterations)
-        y = diff_quality / diff_iterations
-        slope = linregress(iterations[1:], y)[0]
-        return min(0.0, slope)
+        # this_queue = self.queues[for_target]
+        # quality = this_queue[:, 1]
+        # iterations = this_queue[:, 0]
+        # diff_quality = np.diff(quality)
+        # diff_iterations = np.diff(iterations)
+        # y = diff_quality / diff_iterations
+        # slope = linregress(iterations[1:], y)[0]
+        # return min(0.0, slope)

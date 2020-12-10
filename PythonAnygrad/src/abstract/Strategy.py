@@ -29,11 +29,11 @@ class Strategy(ABC):
         self.default_score = default_score
 
     @abstractmethod
-    def get_m(self, derivation_1st: float, derivation_2nd: float, t_switch: float, t1: float):
+    def get_m(self, derivation_1st: float, derivation_2nd: float, t_switch: float, t1: float) -> int:
         pass
 
     @abstractmethod
-    def select_active_targets(self, targets: List[int], efficiency_list: List[float]):
+    def select_active_targets(self, targets: List[int], efficiency_list: List[float]) -> List[int]:
         pass
 
     def burn_in_phase_finished(self, round):

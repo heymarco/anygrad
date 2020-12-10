@@ -28,8 +28,8 @@ class GaussianMixtureAlg(IterativeAlgorithm):
         return process_time() - start
 
     def validate(self, X):
-        score = self.alg.score(X)
-        return score
+        print(self.alg.lower_bound_)
+        return self.alg.lower_bound_
 
     def warm_up(self, X):
         pass
@@ -39,8 +39,6 @@ class GaussianMixtureAlg(IterativeAlgorithm):
             return process_time() - self.start_time > 15 * 60 or self.alg.converged_
         except AttributeError:
             return process_time() - self.start_time > 15 * 60
-
-
 
 
 class MiniBatchKMeansAlg(IterativeAlgorithm):

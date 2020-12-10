@@ -324,11 +324,93 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
                               iterations=iterations,
                               burn_in_phase_length=burn_in_phase_length,
                               sleep=0.0))
-    return Experiment(name="Multilayer Perceptron", strategies=strategies,
+    return Experiment(name="Convolutional on Cifar", strategies=strategies,
                       train_data=[train_loader], val_data=[val_loader],
                       targets=[i for i in range(num_targets)],
                       num_reps=num_reps, parallel=False,
                       target_dir=target_dir)
 
 
+def create_baseline_comparison_cifar(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
+    # Converting data to torch.FloatTensor
+    transform = transforms.ToTensor()
 
+    # Download the training and test datasets
+    train_data = torchvision.datasets.CIFAR10(root='data', train=True, download=True, transform=transform)
+    val_data = torchvision.datasets.CIFAR10(root='data', train=False, download=True, transform=transform)
+
+    # Prepare data loaders
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, num_workers=0)
+    val_loader = torch.utils.data.DataLoader(val_data, batch_size=32, num_workers=0)
+
+    parameter_dict = {
+        "lr": [0.0005, 0.001, 0.005, 0.01],
+        "num_filters": [4, 6, 8, 10, 12]
+    }
+    grid = ParameterGrid(parameter_dict)
+    grid = list(grid)[:num_targets]
+    grid = grid[:num_targets]
+
+    baseline_iterations = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+    burn_in_phase_length = 3
+    strategies = []
+    j = 0
+    for it in baseline_iterations:
+        algorithms = [
+            ConvolutionalAEAlg(num_channels=3, num_filters=params["num_filters"], learning_rate=params["lr"])
+            for params in grid
+        ]
+        strategies.append(Baseline("Baseline (round robin, m={})".format(it),
+                                   algorithms=algorithms,
+                                   iterations=it,
+                                   burn_in_phase_length=burn_in_phase_length,
+                                   sleep=0.0))
+        j += 1
+    return Experiment(name="Baseline Convolutional on Cifar", strategies=strategies,
+                      train_data=[train_loader], val_data=[val_loader],
+                      targets=[i for i in range(num_targets)],
+                      num_reps=num_reps, parallel=False,
+                      target_dir=target_dir)
+
+
+def create_baseline_comparison_gmm(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
+    datasets = {
+        "fmnist": 40996
+    }
+    X, _ = fetch_openml(data_id=datasets["fmnist"], return_X_y=True)
+    np.random.shuffle(X)
+    X = X[:10000]
+    strategies = []
+    scaler = MinMaxScaler()
+    data = [scaler.fit_transform(X)]
+    parameter_dict = {
+        "n_components": [2, 4, 6, 8, 10],
+        "covariance_type": ["full", "tied", "diag", "spherical"],
+        "init_params": ["random"]
+    }
+    grid = list(ParameterGrid(parameter_dict))
+    np.random.shuffle(grid)
+    grid = grid[:num_targets]
+    default_score = np.nan
+    baseline_iterations = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+    burn_in_phase_length = 3
+    strategies = []
+    j = 0
+    for it in baseline_iterations:
+        algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
+                                         covariance_type=grid[i]["covariance_type"],
+                                         init_mode=grid[i]["init_params"])
+                      for i in range(num_targets)]
+        strategies.append(Baseline("Baseline (round robin, m={})".format(it),
+                                   algorithms=algorithms,
+                                   iterations=it,
+                                   burn_in_phase_length=burn_in_phase_length,
+                                   sleep=sleep,
+                                   default_score=default_score))
+        j += 1
+
+    return Experiment(name="Gaussian Mixture Model Baselines on Fashion Mnist",
+                      strategies=strategies,
+                      train_data=data, val_data=data,
+                      targets=[i for i in range(num_targets)],
+                      num_reps=num_reps, parallel=False, target_dir=target_dir)
