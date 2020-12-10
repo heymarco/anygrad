@@ -2,12 +2,45 @@ from time import process_time
 
 import torch
 from sklearn.cluster import MiniBatchKMeans
+from sklearn.mixture import GaussianMixture
 from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import silhouette_score
 from src.abstract.IterativeAlgorithm import IterativeAlgorithm
 from src.torch_models.convolutional import ConvolutionalAE
 import numpy as np
 from torch.utils.data import DataLoader
+
+
+class GaussianMixtureAlg(IterativeAlgorithm):
+    def __init__(self, n_clusters: int, covariance_type: str, init_mode: str = "random"):
+        super(GaussianMixtureAlg, self).__init__()
+        self.n_clusters = n_clusters
+        self.init_mode = init_mode
+        self.total_iterations: int = 0
+        self.alg = GaussianMixture(n_components=n_clusters, warm_start=True,
+                                   init_params=init_mode, covariance_type=covariance_type, tol=1.0E-4)
+
+    def partial_fit(self, X, num_iterations: int):
+        self.total_iterations += num_iterations
+        self.alg.max_iter = num_iterations
+        start = process_time()
+        self.alg.fit(X)
+        return process_time() - start
+
+    def validate(self, X):
+        score = self.alg.score(X)
+        return score
+
+    def warm_up(self, X):
+        pass
+
+    def should_terminate(self, *args, **kwargs) -> bool:
+        try:
+            return process_time() - self.start_time > 15 * 60 or self.alg.converged_
+        except AttributeError:
+            return process_time() - self.start_time > 15 * 60
+
+
 
 
 class MiniBatchKMeansAlg(IterativeAlgorithm):
@@ -35,7 +68,7 @@ class MiniBatchKMeansAlg(IterativeAlgorithm):
         self.alg.partial_fit(X[self.n_clusters])
 
     def should_terminate(self, *args, **kwargs) -> bool:
-        return self.total_iterations > 60
+        return process_time() - self.start_time > 2*60
 
 
 class MLPAlg(IterativeAlgorithm):

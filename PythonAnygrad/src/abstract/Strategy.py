@@ -19,12 +19,14 @@ class Strategy(ABC):
                  algorithms: List[IterativeAlgorithm],
                  iterations: int,
                  burn_in_phase_length: int,
-                 sleep: float = 0.0):
+                 sleep: float = 0.0,
+                 default_score: float = np.nan):
         self.name = name
         self.algorithms = algorithms
         self.iterations = iterations
         self.burn_in_phase_length = burn_in_phase_length
         self.sleep = sleep
+        self.default_score = default_score
 
     @abstractmethod
     def get_m(self, derivation_1st: float, derivation_2nd: float, t_switch: float, t1: float):
@@ -56,17 +58,19 @@ class Strategy(ABC):
 
         timer.init_time()
 
-        results = [[default_snapshot() for _ in range(len(targets))]]
+        results = [[default_snapshot(default_score=self.default_score) for _ in range(len(targets))]]
         [alg.set_start() for alg in self.algorithms]
         while len(active_targets):
             iterating_start = process_time()
             round += 1
             for i in active_targets:
+                if self.algorithms[i].should_terminate():
+                    continue
                 results.append(copy.deepcopy(results[-1]))
                 # improve target and measure performance
                 last_snapshot = results[-1][i]
                 current_train_data = self.__get_data__(train_data, at=i)
-                current_val_data = self.__get_data__(train_data, at=i)
+                current_val_data = self.__get_data__(val_data, at=i)
                 m = m_list[i]
                 print(len(self.algorithms), i)
                 alg_duration = self.algorithms[i].partial_fit(current_train_data, num_iterations=m)

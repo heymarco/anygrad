@@ -11,7 +11,7 @@ from sklearn.model_selection import ParameterGrid
 
 from src.strategies import Anygrad, Baseline, AnygradSelectAll, AnygradOnlySelection
 from src.abstract.Strategy import Strategy
-from src.algorithms import MiniBatchKMeansAlg, MLPAlg, ConvolutionalAEAlg
+from src.algorithms import MiniBatchKMeansAlg, MLPAlg, ConvolutionalAEAlg, GaussianMixtureAlg
 from src.utils.snapshot import snapshots_to_df
 from src.utils.helper import set_random_state
 
@@ -48,6 +48,85 @@ class Experiment:
             df = snapshots_to_df(result)
             df.to_csv(path_or_buf=os.path.join(self.target_dir, strategy.name + ".csv"), sep=";", index=False)
             del copies
+
+
+def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
+    datasets = {
+        "fmnist": 40996
+    }
+    X, _ = fetch_openml(data_id=datasets["fmnist"], return_X_y=True)
+    np.random.shuffle(X)
+    X = X[:10000]
+    strategies = []
+    scaler = MinMaxScaler()
+    data = [scaler.fit_transform(X)]
+    parameter_dict = {
+        "n_components": [2, 4, 6, 8, 10],
+        "covariance_type": ["full", "tied", "diag", "spherical"],
+        "init_params": ["random"]
+    }
+    grid = list(ParameterGrid(parameter_dict))
+    np.random.shuffle(grid)
+    grid = grid[:num_targets]
+    j = 0
+    iterations = 1
+    default_score = 0.0
+    algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
+                                     covariance_type=grid[i]["covariance_type"],
+                                     init_mode=grid[i]["init_params"])
+                  for i in range(num_targets)]
+    strategies.append(Baseline("Baseline (round robin, m=1)",
+                               algorithms=algorithms,
+                               iterations=1,
+                               burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+    j += 1
+    algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
+                                     covariance_type=grid[i]["covariance_type"],
+                                     init_mode=grid[i]["init_params"])
+                  for i in range(num_targets)]
+    strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations),
+                               algorithms=algorithms,
+                               iterations=baseline_iterations,
+                               burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+    j += 1
+    algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
+                                     covariance_type=grid[i]["covariance_type"],
+                                     init_mode=grid[i]["init_params"])
+                  for i in range(num_targets)]
+    strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations * 5),
+                               algorithms=algorithms,
+                               iterations=baseline_iterations * 5,
+                               burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+    j += 1
+    algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
+                                     covariance_type=grid[i]["covariance_type"],
+                                     init_mode=grid[i]["init_params"])
+                  for i in range(num_targets)]
+    strategies.append(AnygradSelectAll("Anygrad (no target selection)", algorithms=algorithms,
+                                       iterations=iterations,
+                                       burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+    j += 1
+    algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
+                                     covariance_type=grid[i]["covariance_type"],
+                                     init_mode=grid[i]["init_params"])
+                  for i in range(num_targets)]
+    strategies.append(AnygradOnlySelection("Anygrad (m={})".format(baseline_iterations),
+                                           algorithms=algorithms,
+                                           iterations=baseline_iterations,
+                                           burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+    j += 1
+    algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
+                                     covariance_type=grid[i]["covariance_type"],
+                                     init_mode=grid[i]["init_params"])
+                  for i in range(num_targets)]
+    strategies.append(Anygrad("Anygrad (full)",
+                              algorithms=algorithms,
+                              iterations=iterations,
+                              burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+    return Experiment(name="kmeans_minibatch", strategies=strategies,
+                      train_data=data, val_data=data,
+                      targets=[i for i in range(num_targets)],
+                      num_reps=num_reps, parallel=False, target_dir=target_dir)
 
 
 def create_kmeans_experiment(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
@@ -91,7 +170,7 @@ def create_kmeans_experiment(num_targets: int, num_reps: int, target_dir: str, s
     strategies.append(AnygradOnlySelection("Anygrad (m={})".format(baseline_iterations),
                                            algorithms=algorithms,
                                            iterations=baseline_iterations,
-                                           burn_in_phase_length=10, sleep=sleep))
+                                           burn_in_phase_length=3, sleep=sleep))
     j += 1
     algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i])
                   for i in range(num_targets)]
@@ -122,10 +201,10 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
             for num_layers in [1] for num_neurons in [4, 20, 100]
         ]
     }
-    data = [MinMaxScaler().fit_transform(d) for d in data]
-    iterations = 3
     grid = ParameterGrid(parameter_dict)
     grid = list(grid)[:num_targets]
+    data = [MinMaxScaler().fit_transform(d) for d in data]
+    iterations = 3
     j = 0
     algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"])
                   for params in grid]

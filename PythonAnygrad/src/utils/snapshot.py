@@ -3,8 +3,8 @@ import pandas as pd
 from typing import List
 
 
-def default_snapshot():
-    return Snapshot(value=np.nan, total_iterations=0, global_time=0.0, time_on_target=0.0,
+def default_snapshot(default_score: float):
+    return Snapshot(value=default_score, total_iterations=0, global_time=0.0, time_on_target=0.0,
                     iterations_on_target=0, incremental_iterations=0,
                     t_switch=np.nan, t1=np.nan, derivation_1st=np.nan, derivation_2nd=np.nan, efficiency=np.nan)
 
