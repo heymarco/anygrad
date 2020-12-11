@@ -272,8 +272,8 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
     val_loader = torch.utils.data.DataLoader(val_data, batch_size=32, num_workers=0)
 
     parameter_dict = {
-        "lr": [0.001, 0.005, 0.01],
-        "num_filters": [3, 6, 12]
+        "lr": [0.0005, 0.001, 0.005, 0.01],
+        "num_filters": [4, 6, 8, 10, 12]
     }
     grid = ParameterGrid(parameter_dict)
     grid = list(grid)[:num_targets]
@@ -281,7 +281,7 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
     print(grid)
 
     iterations = 1
-    baseline_iterations = [1, 2, 4]
+    baseline_iterations = [1, 3, 8]
     burn_in_phase_length = 3
     strategies = []
     j = 0
@@ -312,7 +312,7 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
     ]
     strategies.append(AnygradOnlySelection("Anygrad (m={})".format(150),
                                            algorithms=algorithms,
-                                           iterations=150,
+                                           iterations=3,
                                            burn_in_phase_length=burn_in_phase_length,
                                            sleep=0.0))
     j += 1
