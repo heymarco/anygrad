@@ -18,7 +18,8 @@ class GaussianMixtureAlg(IterativeAlgorithm):
         self.init_mode = init_mode
         self.total_iterations: int = 0
         self.alg = GaussianMixture(n_components=n_clusters, warm_start=True,
-                                   init_params=init_mode, covariance_type=covariance_type, tol=1.0E-4)
+                                   init_params=init_mode, covariance_type=covariance_type,
+                                   tol=1.0E-5, max_iter=1)
 
     def partial_fit(self, X, num_iterations: int):
         self.total_iterations += num_iterations
@@ -36,9 +37,9 @@ class GaussianMixtureAlg(IterativeAlgorithm):
 
     def should_terminate(self, *args, **kwargs) -> bool:
         try:
-            return process_time() - self.start_time > 15 * 60 or self.alg.converged_
+            return process_time() - self.start_time > 20 * 60 or self.alg.converged_
         except AttributeError:
-            return process_time() - self.start_time > 15 * 60
+            return process_time() - self.start_time > 20 * 60
 
 
 class MiniBatchKMeansAlg(IterativeAlgorithm):

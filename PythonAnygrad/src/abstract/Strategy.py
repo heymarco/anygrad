@@ -37,7 +37,7 @@ class Strategy(ABC):
         pass
 
     def burn_in_phase_finished(self, round):
-        return round >= self.burn_in_phase_length
+        return round > (self.burn_in_phase_length - 1)
 
     def run(self, train_data, val_data, targets):
         # essential
@@ -72,7 +72,6 @@ class Strategy(ABC):
                 current_train_data = self.__get_data__(train_data, at=i)
                 current_val_data = self.__get_data__(val_data, at=i)
                 m = m_list[i]
-                print(len(self.algorithms), i)
                 alg_duration = self.algorithms[i].partial_fit(current_train_data, num_iterations=m)
                 utility = self.algorithms[i].validate(current_val_data)
                 wait_nonblocking(duration=self.sleep)
@@ -102,8 +101,9 @@ class Strategy(ABC):
                     # update timestamps of all copied results
                     results[-1][result_index].global_time = global_time
                     results[-1][result_index].total_iterations = total_iterations
+                    results[-1][result_index].round = round
                 # replace snapshot for newly improved target
-                snapshot = Snapshot(value=utility, total_iterations=total_iterations,
+                snapshot = Snapshot(value=utility, round=round, total_iterations=total_iterations,
                                     time_on_target=last_snapshot.time_on_target + alg_duration,
                                     global_time=global_time,
                                     iterations_on_target=total_iterations_on_target,
