@@ -102,7 +102,8 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
                                      covariance_type=grid[i]["covariance_type"],
                                      init_mode=grid[i]["init_params"])
                   for i in range(num_targets)]
-    strategies.append(AnygradSelectAll("Anygrad (no target selection)", algorithms=algorithms,
+    strategies.append(AnygradSelectAll("Anygrad (no target selection)",
+                                       algorithms=algorithms,
                                        iterations=iterations,
                                        burn_in_phase_length=3, sleep=sleep, default_score=default_score))
     j += 1
