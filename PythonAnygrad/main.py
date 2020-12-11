@@ -1,3 +1,4 @@
+import os
 from argparse import ArgumentParser
 from src.experiment import create_kmeans_experiment, create_mlp_experiment, create_cifar_experiment, \
     create_gmm_experiment, create_baseline_comparison_cifar, create_baseline_comparison_gmm
@@ -22,22 +23,27 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     num_targets = args.N
+    target_dir = ""
     if args.E == "gmm":
+        target_dir = "gmm_anygrad"
         experiment = create_gmm_experiment
     elif args.E == "kmeans_batch":
         experiment = create_kmeans_experiment
     elif args.E == "mlp":
         experiment = create_mlp_experiment
     elif args.E == "cifar":
+        target_dir = "conv_anygrad"
         experiment = create_cifar_experiment
     elif args.E == "baselines_conv":
         experiment = create_baseline_comparison_cifar
+        target_dir = "conv_baselines"
     elif args.E == "baselines_gmm":
+        target_dir = "gmm_baselines"
         experiment = create_baseline_comparison_gmm
 
     experiment = experiment(num_targets=num_targets,
                             num_reps=args.reps,
-                            target_dir="save",
+                            target_dir=os.path.join("save", target_dir),
                             sleep=args.sleep)
 
 
