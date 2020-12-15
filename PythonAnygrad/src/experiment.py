@@ -78,7 +78,7 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     strategies.append(Baseline("Baseline (round robin, m=1)",
                                algorithms=algorithms,
                                iterations=1,
-                               burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+                               burn_in_phase_length=3, sleep=sleep))
     j += 1
     algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
                                      covariance_type=grid[i]["covariance_type"],
@@ -87,7 +87,7 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations),
                                algorithms=algorithms,
                                iterations=baseline_iterations,
-                               burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+                               burn_in_phase_length=3, sleep=sleep))
     j += 1
     algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
                                      covariance_type=grid[i]["covariance_type"],
@@ -96,7 +96,7 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     strategies.append(Baseline("Baseline (round robin, m={})".format(baseline_iterations * 5),
                                algorithms=algorithms,
                                iterations=baseline_iterations * 5,
-                               burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+                               burn_in_phase_length=3, sleep=sleep))
     j += 1
     algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
                                      covariance_type=grid[i]["covariance_type"],
@@ -105,7 +105,7 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     strategies.append(AnygradSelectAll("Anygrad (no target selection)",
                                        algorithms=algorithms,
                                        iterations=iterations,
-                                       burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+                                       burn_in_phase_length=3, sleep=sleep))
     j += 1
     algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
                                      covariance_type=grid[i]["covariance_type"],
@@ -114,7 +114,7 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     strategies.append(AnygradOnlySelection("Anygrad (m={})".format(baseline_iterations),
                                            algorithms=algorithms,
                                            iterations=baseline_iterations,
-                                           burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+                                           burn_in_phase_length=3, sleep=sleep))
     j += 1
     algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
                                      covariance_type=grid[i]["covariance_type"],
@@ -123,7 +123,7 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     strategies.append(Anygrad("Anygrad (full)",
                               algorithms=algorithms,
                               iterations=iterations,
-                              burn_in_phase_length=3, sleep=sleep, default_score=default_score))
+                              burn_in_phase_length=3, sleep=sleep))
     return Experiment(name="kmeans_minibatch", strategies=strategies,
                       train_data=data, val_data=data,
                       targets=[i for i in range(num_targets)],
@@ -262,7 +262,12 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
 
 def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
     # Converting data to torch.FloatTensor
-    transform = transforms.ToTensor()
+    transform = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomRotation(degrees=45),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor()
+    ])
 
     # Download the training and test datasets
     train_data = torchvision.datasets.CIFAR10(root='data', train=True, download=True, transform=transform)
@@ -334,7 +339,12 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
 
 def create_baseline_comparison_cifar(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
     # Converting data to torch.FloatTensor
-    transform = transforms.ToTensor()
+    transform = transforms.Compose([
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomRotation(degrees=45),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor()
+    ])
 
     # Download the training and test datasets
     train_data = torchvision.datasets.CIFAR10(root='data', train=True, download=True, transform=transform)
@@ -406,8 +416,7 @@ def create_baseline_comparison_gmm(num_targets: int, num_reps: int, target_dir: 
                                    algorithms=algorithms,
                                    iterations=it,
                                    burn_in_phase_length=burn_in_phase_length,
-                                   sleep=sleep,
-                                   default_score=default_score))
+                                   sleep=sleep))
         j += 1
 
     return Experiment(name="Gaussian Mixture Model Baselines on Fashion Mnist",

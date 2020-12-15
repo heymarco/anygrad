@@ -28,12 +28,12 @@ class GaussianMixtureAlg(IterativeAlgorithm):
         self.alg.fit(X)
         return process_time() - start
 
+    def warm_up(self, X) -> float:
+        return 0.0
+
     def validate(self, X):
         print(self.alg.lower_bound_)
         return self.alg.lower_bound_
-
-    def warm_up(self, X):
-        pass
 
     def should_terminate(self, *args, **kwargs) -> bool:
         try:
@@ -48,6 +48,7 @@ class MiniBatchKMeansAlg(IterativeAlgorithm):
         self.n_clusters = n_clusters
         self.batch_size = batch_size
         self.init_mode = init_mode
+        self.default_score = 0.0
         self.total_iterations: int = 0
         self.alg = MiniBatchKMeans(n_clusters=self.n_clusters, init=self.init_mode,
                                    max_iter=1, batch_size=self.batch_size, max_no_improvement=False,
@@ -64,7 +65,7 @@ class MiniBatchKMeansAlg(IterativeAlgorithm):
         return silhouette_score(X, labels)
 
     def warm_up(self, X):
-        self.alg.partial_fit(X[self.n_clusters])
+        return self.default_score
 
     def should_terminate(self, *args, **kwargs) -> bool:
         return process_time() - self.start_time > 2*60
@@ -102,8 +103,8 @@ class MLPAlg(IterativeAlgorithm):
         duration = process_time() - start
         return duration
 
-    def warm_up(self, X):
-        self.alg.partial_fit(X[:self.batch_size], X[:self.batch_size])
+    def warm_up(self, X) -> float:
+        return self.validate(X)
 
     def validate(self, X):
         prediction = self.alg.predict(X)
@@ -146,8 +147,8 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
                 self.alg.optimizer.step()
         return process_time() - start
 
-    def warm_up(self, X):
-        pass
+    def warm_up(self, X) -> float:
+        return self.validate(X)
 
     def validate(self, X):
         total_loss = 0.0

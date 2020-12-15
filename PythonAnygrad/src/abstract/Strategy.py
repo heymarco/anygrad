@@ -19,14 +19,12 @@ class Strategy(ABC):
                  algorithms: List[IterativeAlgorithm],
                  iterations: int,
                  burn_in_phase_length: int,
-                 sleep: float = 0.0,
-                 default_score: float = np.nan):
+                 sleep: float = 0.0):
         self.name = name
         self.algorithms = algorithms
         self.iterations = iterations
         self.burn_in_phase_length = burn_in_phase_length
         self.sleep = sleep
-        self.default_score = default_score
 
     @abstractmethod
     def get_m(self, derivation_1st: float, derivation_2nd: float, t_switch: float, t1: float) -> int:
@@ -58,7 +56,9 @@ class Strategy(ABC):
 
         timer.init_time()
 
-        results = [[default_snapshot(default_score=self.default_score) for _ in range(len(targets))]]
+        default_scores = [alg.validate(self.__get_data__(val_data, at=i)) for i, alg in enumerate(self.algorithms)]
+        results = [[default_snapshot(default_score=default_scores[i]) for i in range(len(targets))]]
+
         [alg.set_start() for alg in self.algorithms]
         while len(active_targets):
             iterating_start = process_time()
