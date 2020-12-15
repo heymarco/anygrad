@@ -56,7 +56,7 @@ class Strategy(ABC):
 
         timer.init_time()
 
-        default_scores = [alg.validate(self.__get_data__(val_data, at=i)) for i, alg in enumerate(self.algorithms)]
+        default_scores = [alg.warm_up(self.__get_data__(val_data, at=i)) for i, alg in enumerate(self.algorithms)]
         results = [[default_snapshot(default_score=default_scores[i]) for i in range(len(targets))]]
 
         [alg.set_start() for alg in self.algorithms]
