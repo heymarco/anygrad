@@ -360,7 +360,7 @@ def create_baseline_comparison_cifar(num_targets: int, num_reps: int, target_dir
     grid = list(grid)[:num_targets]
     grid = grid[:num_targets]
 
-    baseline_iterations = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+    baseline_iterations = [1, 2, 4, 8, 16, 32, 64, 128, 256]
     burn_in_phase_length = 3
     strategies = []
     j = 0
