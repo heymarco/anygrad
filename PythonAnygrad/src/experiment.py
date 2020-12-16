@@ -56,7 +56,6 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     }
     X, _ = fetch_openml(data_id=datasets["fmnist"], return_X_y=True)
     np.random.shuffle(X)
-    X = X[:10000]
     strategies = []
     scaler = MinMaxScaler()
     data = [scaler.fit_transform(X)]
@@ -274,8 +273,8 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
     val_data = torchvision.datasets.CIFAR10(root='data', train=False, download=True, transform=transform)
 
     # Prepare data loaders
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, num_workers=0)
-    val_loader = torch.utils.data.DataLoader(val_data, batch_size=32, num_workers=0)
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, num_workers=0, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(val_data, batch_size=32, num_workers=0, shuffle=True)
 
     parameter_dict = {
         "lr": [0.0005, 0.001, 0.005, 0.01],
@@ -338,7 +337,6 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
 
 
 def create_baseline_comparison_cifar(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
-    # Converting data to torch.FloatTensor
     transform = transforms.Compose([
         transforms.RandomCrop(32, padding=4),
         transforms.RandomRotation(degrees=45),
@@ -351,8 +349,8 @@ def create_baseline_comparison_cifar(num_targets: int, num_reps: int, target_dir
     val_data = torchvision.datasets.CIFAR10(root='data', train=False, download=True, transform=transform)
 
     # Prepare data loaders
-    train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, num_workers=0)
-    val_loader = torch.utils.data.DataLoader(val_data, batch_size=32, num_workers=0)
+    train_loader = torch.utils.data.DataLoader(train_data, batch_size=32, num_workers=0, shuffle=True)
+    val_loader = torch.utils.data.DataLoader(val_data, batch_size=32, num_workers=0, shuffle=True)
 
     parameter_dict = {
         "lr": [0.0005, 0.001, 0.005, 0.01],

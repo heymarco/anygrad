@@ -136,15 +136,17 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
     def partial_fit(self, X, num_iterations: int):
         self.total_iterations += num_iterations
         assert type(X) is DataLoader
+        X: DataLoader = X
         start = process_time()
         self.alg.train()
-        for i in range(num_iterations):
-            for batch, _ in X:
-                batch = batch.to(self.device)
-                self.alg.optimizer.zero_grad()
-                pred = self.alg.forward(batch)
-                self.alg.loss(pred, batch).backward()
-                self.alg.optimizer.step()
+        iter_dataloader = iter(X)
+        for _ in range(num_iterations):
+            batch, _ = next(iter_dataloader)
+            batch = batch.to(self.device)
+            self.alg.optimizer.zero_grad()
+            pred = self.alg.forward(batch)
+            self.alg.loss(pred, batch).backward()
+            self.alg.optimizer.step()
         return process_time() - start
 
     def warm_up(self, X) -> float:
