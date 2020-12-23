@@ -32,7 +32,6 @@ class GaussianMixtureAlg(IterativeAlgorithm):
         return 0.0
 
     def validate(self, X):
-        print(self.alg.lower_bound_)
         return self.alg.lower_bound_
 
     def should_terminate(self, *args, **kwargs) -> bool:
@@ -137,9 +136,9 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
         self.total_iterations += num_iterations
         assert type(X) is DataLoader
         X: DataLoader = X
-        start = process_time()
         self.alg.train()
         iter_dataloader = iter(X)
+        start = process_time()
         for _ in range(num_iterations):
             batch, _ = next(iter_dataloader)
             batch = batch.to(self.device)

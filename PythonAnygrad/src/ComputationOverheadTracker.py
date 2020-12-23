@@ -22,7 +22,7 @@ class ComputationOverheadTracker:
         if len(self.time_model_queues[at]) > queue_max_size:
             self.time_model_queues[at] = self.time_model_queues[at][-queue_max_size:]
 
-    def track_round_overhead(self,overhead: float,
+    def track_round_overhead(self, overhead: float,
                              queue_max_size: int = 10):
         self.round_overhead_queue = np.append(self.round_overhead_queue, overhead)
         if len(self.round_overhead_queue) > queue_max_size:
