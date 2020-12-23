@@ -25,6 +25,7 @@ class Experiment:
                  val_data,
                  targets: List[int],
                  num_reps: int,
+                 m_max: int,
                  parallel: bool,
                  name: str,
                  target_dir: str = "./save"):
@@ -36,6 +37,7 @@ class Experiment:
         self.name = name
         self.target_dir = target_dir
         self.targets = targets
+        self.m_max = m_max
 
     def run(self):
         random_seed = np.random.randint(low=0, high=100, size=self.num_reps)
@@ -44,7 +46,7 @@ class Experiment:
             result = []
             for i, strat in enumerate(copies):
                 set_random_state(random_seed[i])
-                result.append(strat.run(self.train_data, self.val_data, self.targets))
+                result.append(strat.run(self.train_data, self.val_data, self.targets, m_max=self.m_max))
             df = snapshots_to_df(result)
             df.to_csv(path_or_buf=os.path.join(self.target_dir, strategy.name + ".csv"), sep=";", index=False)
             del copies
@@ -69,7 +71,7 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     grid = grid[:num_targets]
     j = 0
     iterations = 1
-    default_score = 0.0
+    m_max = 200
     algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
                                      covariance_type=grid[i]["covariance_type"],
                                      init_mode=grid[i]["init_params"])
@@ -126,7 +128,7 @@ def create_gmm_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     return Experiment(name="kmeans_minibatch", strategies=strategies,
                       train_data=data, val_data=data,
                       targets=[i for i in range(num_targets)],
-                      num_reps=num_reps, parallel=False, target_dir=target_dir)
+                      num_reps=num_reps, parallel=False, target_dir=target_dir, m_max=m_max)
 
 
 def create_kmeans_experiment(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
@@ -138,6 +140,7 @@ def create_kmeans_experiment(num_targets: int, num_reps: int, target_dir: str, s
     np.random.shuffle(num_clusters)
     j = 0
     iterations = 1
+    m_max = 200
     algorithms = [MiniBatchKMeansAlg(n_clusters=num_clusters[i])
                   for i in range(num_targets)]
     strategies.append(Baseline("Baseline (round robin, m=1)",
@@ -180,7 +183,7 @@ def create_kmeans_experiment(num_targets: int, num_reps: int, target_dir: str, s
     return Experiment(name="kmeans_minibatch", strategies=strategies,
                       train_data=data, val_data=data,
                       targets=[i for i in range(num_targets)],
-                      num_reps=num_reps, parallel=False, target_dir=target_dir)
+                      num_reps=num_reps, parallel=False, target_dir=target_dir, m_max=m_max)
 
 
 def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
@@ -206,6 +209,7 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
     data = [MinMaxScaler().fit_transform(d) for d in data]
     iterations = 3
     j = 0
+    m_max = 200
     algorithms = [MLPAlg(neurons_hidden=params["neurons"], learning_rate=params["lr"])
                   for params in grid]
     strategies.append(Baseline("Baseline (round robin, m={})".format(iterations),
@@ -256,7 +260,7 @@ def create_mlp_experiment(num_targets: int, num_reps: int, target_dir: str, slee
                       train_data=data, val_data=data,
                       targets=[i for i in range(num_targets)],
                       num_reps=num_reps, parallel=False,
-                      target_dir=target_dir)
+                      target_dir=target_dir, m_max=m_max)
 
 
 def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
@@ -283,11 +287,11 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
     grid = ParameterGrid(parameter_dict)
     grid = list(grid)[:num_targets]
     grid = grid[:num_targets]
-    print(grid)
 
     iterations = 1
     baseline_iterations = [1, 3, 8]
     burn_in_phase_length = 3
+    m_max = 10000
     strategies = []
     j = 0
     for it in baseline_iterations:
@@ -333,7 +337,7 @@ def create_cifar_experiment(num_targets: int, num_reps: int, target_dir: str, sl
                       train_data=[train_loader], val_data=[val_loader],
                       targets=[i for i in range(num_targets)],
                       num_reps=num_reps, parallel=False,
-                      target_dir=target_dir)
+                      target_dir=target_dir, m_max=m_max)
 
 
 def create_baseline_comparison_cifar(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
@@ -362,6 +366,7 @@ def create_baseline_comparison_cifar(num_targets: int, num_reps: int, target_dir
 
     baseline_iterations = [1, 2, 4, 8, 16, 32, 64, 128, 256]
     burn_in_phase_length = 3
+    m_max = 10000
     strategies = []
     j = 0
     for it in baseline_iterations:
@@ -379,7 +384,7 @@ def create_baseline_comparison_cifar(num_targets: int, num_reps: int, target_dir
                       train_data=[train_loader], val_data=[val_loader],
                       targets=[i for i in range(num_targets)],
                       num_reps=num_reps, parallel=False,
-                      target_dir=target_dir)
+                      target_dir=target_dir, m_max=m_max)
 
 
 def create_baseline_comparison_gmm(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
@@ -404,6 +409,7 @@ def create_baseline_comparison_gmm(num_targets: int, num_reps: int, target_dir: 
     baseline_iterations = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
     burn_in_phase_length = 3
     strategies = []
+    m_max = 200
     j = 0
     for it in baseline_iterations:
         algorithms = [GaussianMixtureAlg(n_clusters=grid[i]["n_components"],
@@ -421,4 +427,4 @@ def create_baseline_comparison_gmm(num_targets: int, num_reps: int, target_dir: 
                       strategies=strategies,
                       train_data=data, val_data=data,
                       targets=[i for i in range(num_targets)],
-                      num_reps=num_reps, parallel=False, target_dir=target_dir)
+                      num_reps=num_reps, parallel=False, target_dir=target_dir, m_max=m_max)

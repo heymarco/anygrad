@@ -27,7 +27,10 @@ class Strategy(ABC):
         self.sleep = sleep
 
     @abstractmethod
-    def get_m(self, derivation_1st: float, derivation_2nd: float, t_switch: float, t1: float) -> int:
+    def get_m(self,
+              derivation_1st: float, derivation_2nd: float,
+              t_switch: float, t1: float,
+              max_iterations: int) -> int:
         pass
 
     @abstractmethod
@@ -37,7 +40,7 @@ class Strategy(ABC):
     def burn_in_phase_finished(self, round):
         return round > (self.burn_in_phase_length - 1)
 
-    def run(self, train_data, val_data, targets):
+    def run(self, train_data, val_data, targets, m_max: int):
         # essential
         m_list = [self.iterations for _ in range(len(targets))]
         efficiency_list = [np.nan for _ in range(len(targets))]
@@ -90,7 +93,7 @@ class Strategy(ABC):
                     derivation_1st = performance_observer.get_1st_derivation_approximation(for_target=i)
                     derivation_2nd = performance_observer.get_2nd_derivation_approximation(for_target=i)
                     m_list[i] = self.get_m(derivation_1st=derivation_1st, derivation_2nd=derivation_2nd,
-                                           t_switch=t_switch, t1=t1)
+                                           t_switch=t_switch, t1=t1, max_iterations=m_max)
                     efficiency_list[i] = self.efficiency(t_switch=t_switch, t1=t1,
                                                          derivation_1st=derivation_1st, derivation_2nd=derivation_2nd,
                                                          m_opt=m_list[i])
@@ -126,7 +129,10 @@ class Strategy(ABC):
         eff = (derivation_1st * m_opt + 0.5*derivation_2nd * m_opt**2) / (t_switch + m_opt * t1)
         return eff
 
-    def get_m_opt(self, derivation_1st: float, derivation_2nd: float, t_switch: float, t1: float):
+    def get_m_opt(self,
+                  derivation_1st: float, derivation_2nd: float,
+                  t_switch: float, t1: float,
+                  max_iterations: int):
         a = derivation_1st
         b = 0.5 * derivation_2nd
         c = t_switch
@@ -141,8 +147,8 @@ class Strategy(ABC):
             return self.iterations
         if m_opt < 0:
             print(a, b, c, d)
-        if m_opt > 200:
-            return 200
+        if m_opt > max_iterations:
+            return max_iterations
         return max(1, int(np.ceil(m_opt)))
 
     def select_efficient_targets(self, targets: List[int], efficiency_list: List[float]):

@@ -138,8 +138,9 @@ class ConvolutionalAEAlg(IterativeAlgorithm):
         X: DataLoader = X
         self.alg.train()
         iter_dataloader = iter(X)
+        iterations = range(num_iterations)
         start = process_time()
-        for _ in range(num_iterations):
+        for _ in iterations:
             batch, _ = next(iter_dataloader)
             batch = batch.to(self.device)
             self.alg.optimizer.zero_grad()
