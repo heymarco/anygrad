@@ -7,7 +7,7 @@ import objects.bound.{Chernoff, Hoeffding}
 import objects.utility.{Identity, None}
 import utils.helper.{default_snapshot, update_solution, wait_nonblocking}
 import utils.types.{Snapshot, Solution}
-import utils.{ComputationOverheadTracker, PerformanceObserver}
+import utils.{ComputationOverheadTracker, PerformanceObserver, LESExecutionTimeTracker}
 
 import scala.math.{max, sqrt}
 
@@ -100,10 +100,12 @@ trait Strategy extends Repeatable {
         var totalRoundOverhead = 0.0
         var round_timestamp = StopWatch.stop()._1
         val timer = new ComputationOverheadTracker(targets.length)
+        val execTimeCalculator = new LESExecutionTimeTracker(targets.length)
         active_targets = targets.indices.toArray
         results.append(
             Array.fill[Snapshot](num_elements, num_elements)(default_snapshot(default_solution, bound=bound, eps=epsilon))
         )
+        execTimeCalculator.startTimer()
         while (active_targets.nonEmpty) {
             val iterating_start = StopWatch.stop()._1
             val round_results = results.last.map(_.clone())
@@ -130,6 +132,7 @@ trait Strategy extends Repeatable {
                 )
                 round_results(p._1)(p._2) = new_snapshot
                 round_results(p._2)(p._1) = new_snapshot
+                execTimeCalculator.updateTimeModel(i, iterations)
             }
             val iterating_duration = StopWatch.stop()._1 - iterating_start
             results.append(round_results)
