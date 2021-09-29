@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from time import process_time
+from src.utils.stopwatch import measure_duration
 import numpy as np
 
 
@@ -11,11 +12,12 @@ class IterativeAlgorithm(ABC):
         self.default_score = np.nan
 
     @abstractmethod
-    def partial_fit(self, X, num_iterations: int):
+    @measure_duration
+    def partial_fit(self, X, num_iterations: int) -> (float, int):
         pass
 
     @abstractmethod
-    def validate(self, X):
+    def validate(self, X) -> float:
         pass
 
     @abstractmethod

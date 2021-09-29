@@ -1,7 +1,7 @@
 package experiments
 
-import strategies.anygrad_variations.{AnyGradSelectProbability, AnygradEmpiricalInfo}
-import strategies.{AnyGrad, AnyGradSelectAll, Baseline}
+import strategies.anygrad_variations.AnyGradSelectProbability
+import strategies.{AnyGrad, AnyGradSelectAll, Baseline, BaselineVaryM}
 import traits.{Experiment, Repeatable, Strategy}
 
 
@@ -27,11 +27,11 @@ class SingleRun extends Experiment {
         else if ("anygrad_sp".equals(strategy_id)) {
             new AnyGradSelectProbability
         }
-        else if ("anygrad_ei".equals(strategy_id)) {
-            new AnygradEmpiricalInfo
-        }
         else if ("baseline".equals(strategy_id)) {
             new Baseline
+        }
+        else if ("baseline-vary-m".equals(strategy_id)) {
+            new BaselineVaryM
         }
         else {
             throw new Error("No valid strategy identifier provided")

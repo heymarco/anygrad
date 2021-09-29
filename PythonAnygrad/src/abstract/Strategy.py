@@ -1,13 +1,13 @@
 import copy
-from time import process_time
 from abc import ABC, abstractmethod
-import sys
+from time import process_time
 
 import numpy as np
 from typing import List
 
 from src.ComputationOverheadTracker import ComputationOverheadTracker
 from src.PerformanceObserver import PerformanceObserver
+from src.abstract.PerformanceProfile import PerformanceProfile
 from src.utils.snapshot import default_snapshot, Snapshot
 from src.abstract.IterativeAlgorithm import IterativeAlgorithm
 from src.utils.helper import wait_nonblocking
@@ -19,12 +19,14 @@ class Strategy(ABC):
                  algorithms: List[IterativeAlgorithm],
                  iterations: int,
                  burn_in_phase_length: int,
+                 performance_profile_class,
                  sleep: float = 0.0):
         self.name = name
         self.algorithms = algorithms
         self.iterations = iterations
         self.burn_in_phase_length = burn_in_phase_length
         self.sleep = sleep
+        self.performance_profile_class = performance_profile_class
 
     @abstractmethod
     def get_m(self,
@@ -40,15 +42,19 @@ class Strategy(ABC):
     def burn_in_phase_finished(self, round):
         return round > (self.burn_in_phase_length - 1)
 
-    def run(self, train_data, val_data, targets, m_max: int):
+    def run(self, train_data, val_data, targets, m_max: int, deadline_seconds: float = 120):
         # essential
         m_list = [self.iterations for _ in range(len(targets))]
         efficiency_list = [np.nan for _ in range(len(targets))]
         active_targets = list(range(len(targets)))
 
+
         # performance tracking
         timer = ComputationOverheadTracker(num_targets=len(targets))
-        performance_observer = PerformanceObserver(num_targets=len(targets))
+        performance_profile = self.performance_profile_class()
+
+        default_scores = [alg.warm_up(self.__get_data__(val_data, at=i)) for i, alg in enumerate(self.algorithms)]
+        results = [[default_snapshot(default_score=default_scores[i]) for i in range(len(targets))]]
 
         # evaluation
         total_iterations = 0
@@ -56,14 +62,8 @@ class Strategy(ABC):
         total_round_overhead = 0.0
         t_start = process_time()
         t_round = t_start
-
-        timer.init_time()
-
-        default_scores = [alg.warm_up(self.__get_data__(val_data, at=i)) for i, alg in enumerate(self.algorithms)]
-        results = [[default_snapshot(default_score=default_scores[i]) for i in range(len(targets))]]
-
         [alg.set_start() for alg in self.algorithms]
-        while len(active_targets):
+        while len(active_targets) and process_time() - t_start < deadline_seconds:
             iterating_start = process_time()
             round += 1
             for i in active_targets:
@@ -75,27 +75,26 @@ class Strategy(ABC):
                 current_train_data = self.__get_data__(train_data, at=i)
                 current_val_data = self.__get_data__(val_data, at=i)
                 m = m_list[i]
-                alg_duration = self.algorithms[i].partial_fit(current_train_data, num_iterations=m)
+                alg_duration, m = self.algorithms[i].partial_fit(current_train_data, num_iterations=m)
                 utility = self.algorithms[i].validate(current_val_data)
                 wait_nonblocking(duration=self.sleep)
 
                 # update performance metrics
-                timer.update_time_model_parameters(target=i, alg_duration=alg_duration, m=m, delta=1.0)
-                timer.set_signal()
+                timer.update_time_model_parameters(target=i, alg_duration=alg_duration, m=m)
                 total_iterations += m
                 total_iterations_on_target = last_snapshot.iterations_on_target + m
-                performance_observer.enqueue((total_iterations_on_target, utility), at=i, queue_max_size=10)
 
                 # update m and take snapshot
-                t_switch, t1 = timer.get_time_model_for_target(i, num_active_targets=len(active_targets))
-                derivation_1st, derivation_2nd = np.nan, np.nan
+                t_switch, t1 = timer.get_time_model_for_target(i)
+                d1, d2 = np.nan, np.nan
+                quality = performance_profile.value(total_iterations_on_target)
                 if self.burn_in_phase_finished(round):
-                    derivation_1st = performance_observer.get_1st_derivation_approximation(for_target=i)
-                    derivation_2nd = performance_observer.get_2nd_derivation_approximation(for_target=i)
-                    m_list[i] = self.get_m(derivation_1st=derivation_1st, derivation_2nd=derivation_2nd,
+                    d1 = performance_profile.first_derivation(total_iterations_on_target)
+                    d2 = performance_profile.second_derivation(total_iterations_on_target)
+                    m_list[i] = self.get_m(derivation_1st=d1, derivation_2nd=d2,
                                            t_switch=t_switch, t1=t1, max_iterations=m_max)
                     efficiency_list[i] = self.efficiency(t_switch=t_switch, t1=t1,
-                                                         derivation_1st=derivation_1st, derivation_2nd=derivation_2nd,
+                                                         derivation_1st=d1, derivation_2nd=d2,
                                                          m_opt=m_list[i])
 
                 # Update results
@@ -112,13 +111,12 @@ class Strategy(ABC):
                                     iterations_on_target=total_iterations_on_target,
                                     incremental_iterations=m,
                                     t_switch=t_switch, t1=t1,
-                                    derivation_1st=derivation_1st, derivation_2nd=derivation_2nd,
-                                    efficiency=efficiency_list[i])
+                                    derivation_1st=d1, derivation_2nd=d2,
+                                    efficiency=efficiency_list[i], quality=quality)
                 results[-1][i] = snapshot
             iterating_duration = process_time() - iterating_start
             round_processing_time = process_time() - t_round - iterating_duration
             t_round = process_time()
-            timer.track_round_overhead(round_processing_time)
             total_round_overhead += round_processing_time
             if self.burn_in_phase_finished(round) or self.name.startswith("Baseline"):
                 active_targets = self.select_active_targets(targets=targets, efficiency_list=efficiency_list)
@@ -171,7 +169,10 @@ class Strategy(ABC):
         print("Total round overhead of {} = {}".format(self.name, total_round_overhead))
 
     def __get_data__(self, data, at: int):
-        if len(data) == 1:
+        if data is None:
+            # for algorithms which don't use data. E.g. A*
+            return data
+        elif len(data) == 1:
             return data[0]
         else:
             return data[at]

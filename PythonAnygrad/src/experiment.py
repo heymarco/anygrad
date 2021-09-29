@@ -9,9 +9,10 @@ from sklearn.datasets import fetch_openml
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import ParameterGrid
 
+from src.pathfinding.performance_profiles import EightPuzzlePerformanceProfile
 from src.strategies import Anygrad, Baseline, AnygradSelectAll, AnygradOnlySelection
 from src.abstract.Strategy import Strategy
-from src.algorithms import MiniBatchKMeansAlg, MLPAlg, ConvolutionalAEAlg, GaussianMixtureAlg
+from src.algorithms import MiniBatchKMeansAlg, MLPAlg, ConvolutionalAEAlg, GaussianMixtureAlg, MAStarAlg
 from src.utils.snapshot import snapshots_to_df
 from src.utils.helper import set_random_state
 
@@ -48,6 +49,7 @@ class Experiment:
                 set_random_state(random_seed[i])
                 result.append(strat.run(self.train_data, self.val_data, self.targets, m_max=self.m_max))
             df = snapshots_to_df(result)
+            print(df)
             df.to_csv(path_or_buf=os.path.join(self.target_dir, strategy.name + ".csv"), sep=";", index=False)
             del copies
 
@@ -426,5 +428,26 @@ def create_baseline_comparison_gmm(num_targets: int, num_reps: int, target_dir: 
     return Experiment(name="Gaussian Mixture Model Baselines on Fashion Mnist",
                       strategies=strategies,
                       train_data=data, val_data=data,
+                      targets=[i for i in range(num_targets)],
+                      num_reps=num_reps, parallel=False, target_dir=target_dir, m_max=m_max)
+
+
+def create_a_star_experiment(num_targets: int, num_reps: int, target_dir: str, sleep: float = 0.0):
+    baseline_iterations = [1, 10, 100, 1000]
+    m_max = 10000
+
+    strategies = []
+    for it in baseline_iterations:
+        algorithms = [MAStarAlg() for _ in range(num_targets)]
+        strategies.append(Baseline("Baseline (round robin, m={})".format(it),
+                                  algorithms=algorithms,
+                                  iterations=it,
+                                  burn_in_phase_length=2,
+                                  performance_profile_class=EightPuzzlePerformanceProfile,
+                                  sleep=sleep))
+
+    return Experiment(name="A Star Baselines",
+                      strategies=strategies,
+                      train_data=None, val_data=None,
                       targets=[i for i in range(num_targets)],
                       num_reps=num_reps, parallel=False, target_dir=target_dir, m_max=m_max)

@@ -7,7 +7,7 @@ import objects.bound.{Chernoff, Hoeffding}
 import objects.utility.{Identity, None}
 import utils.helper.{default_snapshot, update_solution, wait_nonblocking}
 import utils.types.{Snapshot, Solution}
-import utils.{ComputationOverheadTracker, PerformanceObserver, LESExecutionTimeTracker}
+import utils.{ComputationOverheadTracker, LESExecutionTimeTracker, PerformanceObserver, _Snapshot}
 
 import scala.math.{max, sqrt}
 
@@ -18,17 +18,20 @@ trait Strategy extends Repeatable {
     val bound: Bound = new Hoeffding()
     val utility_function: Utility = new Identity()
     var m: Int = 10
-    protected var epsilon = 0.03
+    protected var epsilon = 0.01
     protected var sleep = 0.0 // [ms]
     protected val burnInPhaseLength = 3
+    protected var experimentId = 0
 
     def get_m(solution: Solution, t_cs: Double, t_1: Double): Int = {
         val dM = -bound.dM(solution, eps = epsilon)
         val ddM = -bound.ddM(solution, eps = epsilon)
-        println("***")
-        println("ratio gradient  = %s".format(dM/ddM))
-        println("ratio time  = %s".format(t_cs/t_1))
-        get_m(dM, ddM, t_cs, t_1)
+//        println("***")
+//        println("Using bound to compute m")
+//        println("ratio gradient  = %s".format(dM/ddM))
+//        println("ratio time  = %s".format(t_cs/t_1))
+        val m = get_m(dM, ddM, t_cs, t_1)
+        m
     }
 
     def get_m(performanceObserver: PerformanceObserver, targetIndex: Int,
@@ -64,16 +67,17 @@ trait Strategy extends Repeatable {
         }
     }
 
-    def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[Snapshot]]): Array[Int] = {
+    def select_active_targets(until: Double, targets: ArrayBuffer[(Int, Int)], results: Array[Array[_Snapshot]]): Array[Int] = {
         targets.zipWithIndex.filter(item => {
-            val quality = results(item._1._1)(item._1._2)._2
+            val quality = results(item._1._1)(item._1._2).getQuality()
             quality < until
         }).map(_._2).toArray
     }
 
-    def run(data: Array[Array[Double]], until: Double): Array[Array[Array[Snapshot]]] = { // Returns an array of matrices
+    def run(data: Array[Array[Double]], until: Double, currentRepetition: Int): Array[_Snapshot] = { // Returns an array of matrices
+        experimentId = currentRepetition
         val targets = ArrayBuffer[(Int, Int)]()
-        val results = ArrayBuffer[Array[Array[Snapshot]]]()
+        val results = ArrayBuffer[Array[Array[_Snapshot]]]()
 
         val num_elements = data.length
         for {
@@ -92,29 +96,29 @@ trait Strategy extends Repeatable {
             val _ = estimators(i).run(pdata, Set(p._1, p._2), 10)
         }
 
-        var active_targets = Array[Int]()
         var totalIterations = 0
         var r = 0
-        val default_solution: Solution = (0.0, 0, (0, 0.0, 0.0))
         val T_start = StopWatch.stop()._1
-        var totalRoundOverhead = 0.0
+        // var totalRoundOverhead = 0.0
         var round_timestamp = StopWatch.stop()._1
         val timer = new ComputationOverheadTracker(targets.length)
         val execTimeCalculator = new LESExecutionTimeTracker(targets.length)
-        active_targets = targets.indices.toArray
-        results.append(
-            Array.fill[Snapshot](num_elements, num_elements)(default_snapshot(default_solution, bound=bound, eps=epsilon))
-        )
+        var active_targets = targets.indices.toArray
         execTimeCalculator.startTimer()
+        timer.startTimer()
         while (active_targets.nonEmpty) {
             val iterating_start = StopWatch.stop()._1
-            val round_results = results.last.map(_.clone())
+            val round_results: Array[Array[_Snapshot]] = if (r == 0) {
+                Array.ofDim(num_elements, num_elements)
+            } else {
+                results.last.map(_.clone())
+            }
             for (i <- active_targets) {
-                timer.setSignalStart()
                 val p = targets(i)
-                val current_result = round_results(p._1)(p._2)._1
+                val current_result = if (r == 0) { null } else { round_results(p._1)(p._2).getSolution() }
                 val (tSwitch, t1) = timer.getTimeModelForTarget(i)
-                val iterations = if (burnInPhaseFinished(r)) { get_m(current_result, tSwitch, t1) } else { m }
+                val (tsCalc, t1Calc) = execTimeCalculator.getTimeModel(i)
+                val iterations = if (burnInPhaseFinished(r)) { get_m(current_result, tSwitch, t1) } else { m * (r+1) }
                 val (dependency_update, time, variance) = estimators(i).run(pdata, Set(p._1, p._2), iterations)
                 val result = (dependency_update, iterations, variance)
                 val updated_result = update_solution(current_result, result)
@@ -123,47 +127,53 @@ trait Strategy extends Repeatable {
                 val quality = 1 - bound.value(updated_result, epsilon)
                 val utility = utility_function.compute(updated_result)
                 wait_nonblocking(sleep)
-                timer.setSignalEnd()
-                timer.updateTimeModelParameters(target = i, algDuration = time, m = iterations)
-                val new_snapshot: Snapshot = (
-                    updated_result, quality, utility,
-                    totalIterations, T, iterations,
-                    tSwitch, t1
+                val newSnapshot = _Snapshot(
+                    result = updated_result._1,
+                    quality = quality,
+                    utility = utility,
+                    tsMeasured = tSwitch,
+                    t1Measured = t1,
+                    tsCalculated = tsCalc,
+                    t1Calculated = t1Calc,
+                    variance = updated_result._3,
+                    totalIterations = totalIterations,
+                    m = iterations,
+                    M = updated_result._2.toDouble,
+                    round = r,
+                    target = i,
+                    T = T,
+                    experimentRepetition = currentRepetition
                 )
-                round_results(p._1)(p._2) = new_snapshot
-                round_results(p._2)(p._1) = new_snapshot
+                round_results(p._1)(p._2) = newSnapshot
+                round_results(p._2)(p._1) = newSnapshot
+                timer.updateTimeModelParameters(target = i, algDuration = time, m = iterations)
                 execTimeCalculator.updateTimeModel(i, iterations)
             }
             val iterating_duration = StopWatch.stop()._1 - iterating_start
-            results.append(round_results)
+            results.append(round_results.clone())
             val round_processing_time = StopWatch.stop()._1 - round_timestamp - iterating_duration
             round_timestamp = StopWatch.stop()._1
-            timer.trackRoundOverheadPerTarget(round_processing_time / active_targets.length)
+            //timer.trackRoundOverheadPerTarget(round_processing_time / active_targets.length)
             r = r + 1
-            totalRoundOverhead += timer.getTotalRoundOverhead(active_targets.length)
+            //totalRoundOverhead += timer.getTotalRoundOverhead(active_targets.length)
             if (burnInPhaseFinished(r)) {
                 active_targets = select_active_targets(until,
                     targets = targets,
                     results = results.last)
             }
         }
-        printStatistics(StopWatch.stop()._1 - T_start, totalRoundOverhead)
-        getUpperTriangle(results)
+        printStatistics(StopWatch.stop()._1 - T_start)
+        getUpperTriangles(results)
     }
 
-    protected def getUpperTriangle(results: ArrayBuffer[Array[Array[Snapshot]]]): Array[Array[Array[Snapshot]]] = {
-        results.indices
-            .map(i => results(i)
-                .zipWithIndex
-                .map{case(r,j) => r.drop(j+1)}
-                .dropRight(1))
-            .toArray
+    protected def getUpperTriangles(results: ArrayBuffer[Array[Array[_Snapshot]]]): Array[_Snapshot] = {
+        results.map(_.zipWithIndex.flatMap { case (r,i) => r.drop(i+1) }).toArray.flatten
     }
 
     protected def burnInPhaseFinished(roundIndex: Int): Boolean = roundIndex >= burnInPhaseLength
 
-    protected def printStatistics(totalRuntime: Double, totalRoundOverhead: Double): Unit = {
+    protected def printStatistics(totalRuntime: Double): Unit = {
         println("Total runtime of %s = %s".format(name, totalRuntime))
-        println("Total round overhead of %s = %s".format(name, totalRoundOverhead))
+        // println("Total round overhead of %s = %s".format(name, totalRoundOverhead))
     }
 }

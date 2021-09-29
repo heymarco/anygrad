@@ -1,6 +1,6 @@
 package experiments
 
-import strategies.anygrad_variations.{AnyGradSelectProbability, AnygradEmpiricalInfo}
+import strategies.anygrad_variations.AnyGradSelectProbability
 import strategies.{AnyGrad, AnyGradSelectAll, Baseline}
 import traits.Experiment
 import traits.Repeatable
@@ -19,6 +19,5 @@ class AnygradComparison extends Experiment {
         }
         strategies :+= new AnyGradSelectAll
         strategies :+= new AnyGradSelectProbability
-        strategies :+= new AnygradEmpiricalInfo
     }
 }

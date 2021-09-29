@@ -5,6 +5,7 @@ import scala.math.{max, pow, sqrt}
 import objects.bound.{Chernoff, Hoeffding}
 import traits.Strategy
 import objects.utility.{Identity, None}
+import utils._Snapshot
 import utils.types.{Snapshot, Solution}
 
 
@@ -25,7 +26,7 @@ class AnyGrad extends Strategy {
      */
     override def select_active_targets(until: Double,
                                        targets: ArrayBuffer[(Int, Int)],
-                                       results: Array[Array[Snapshot]]): Array[Int] = {
+                                       results: Array[Array[_Snapshot]]): Array[Int] = {
         val activeTargetIndices = super.select_active_targets(until, targets, results)
         if (activeTargetIndices.isEmpty) {
             return activeTargetIndices
@@ -38,8 +39,8 @@ class AnyGrad extends Strategy {
             index => {
                 val thisTarget = targets(index)
                 val result = results(thisTarget._1)(thisTarget._2)
-                val utility = result._3
-                val gradient = -bound.dM(result._1, eps = epsilon) * utility
+                val utility = result.getUtility()
+                val gradient = -bound.dM(result.getSolution(), eps = epsilon) * utility
                 // println(String.format("%s, ", i))
                 i += 1
                 minGradient = if (gradient < minGradient) { gradient } else { minGradient }

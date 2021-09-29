@@ -8,7 +8,7 @@ import traits.Repeatable
 
 
 class ToverM extends Experiment {
-    val m_list = Array(1, 4, 16, 64, 256)
+    val m_list = Array(2, 5, 10, 20, 30, 40, 60, 80, 100, 130, 160, 200)
     val name = "T over M"
 
     def init_strategies() = {

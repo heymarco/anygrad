@@ -43,13 +43,13 @@ object StopWatch {
   }
 
   // returns cpu and wall time
-  def stop(unit: String = "ms"): (Double,Double) = {
+  def stop(unit: String = "μs"): (Double,Double) = {
     val cpu = thread.getCurrentThreadCpuTime - startCPU
     val wall = System.nanoTime() - startWall
     (convert(cpu, unit), convert(wall, unit))
   }
 
-  def measureTime[R](block: => R, unit: String = "ms"): (Double,Double, R) = {
+  def measureTime[R](block: => R, unit: String = "μs"): (Double,Double, R) = {
     val t01 = thread.getCurrentThreadCpuTime
     val t02 = System.nanoTime()
     val result = block
@@ -59,14 +59,14 @@ object StopWatch {
   }
 
 
-  def measureCPUTime[R](block: => R, unit: String = "ms"): (Double, R) = {
+  def measureCPUTime[R](block: => R, unit: String = "μs"): (Double, R) = {
     val t0 = thread.getCurrentThreadCpuTime
     val result = block
     val t1 = thread.getCurrentThreadCpuTime
     (convert(t1 - t0, unit), result)
   }
 
-  def measureWallTime[R](block: => R, unit: String = "ms"): (Double, R) = {
+  def measureWallTime[R](block: => R, unit: String = "μs"): (Double, R) = {
     val t0 = System.nanoTime()
     val result = block
     val t1 = System.nanoTime()

@@ -55,8 +55,7 @@ object helper {
     }
 
     def update_solution(s_old: Solution, s_new: Solution): Solution = {
-
-        if (s_old._2 == 0) {
+        if (s_old == null) {
             return s_new
         }
         val (v_old, m_old, variance_old) = s_old
@@ -125,42 +124,42 @@ object helper {
 
     def median_int(arr: Array[Int]): Int = {
 
+        def medianUpTo5(five: Array[Int]): Int = {
+            def order2(a: Array[Int], i: Int, j: Int) = {
+                if (a(i) > a(j)) {
+                    val t = a(i); a(i) = a(j); a(j) = t
+                }
+            }
+
+            def pairs(a: Array[Int], i: Int, j: Int, k: Int, l: Int) = {
+                if (a(i) < a(k)) {
+                    order2(a, j, k); a(j)
+                }
+                else {
+                    order2(a, i, l); a(i)
+                }
+            }
+
+            if (five.length < 2) return five(0)
+            order2(five, 0, 1)
+            if (five.length < 4) return (
+                if (five.length == 2 || five(2) < five(0)) five(0)
+                else if (five(2) > five(1)) five(1)
+                else five(2)
+                )
+            order2(five, 2, 3)
+            if (five.length < 5) pairs(five, 0, 1, 2, 3)
+            else if (five(0) < five(2)) {
+                order2(five, 1, 4); pairs(five, 1, 4, 2, 3)
+            }
+            else {
+                order2(five, 3, 4); pairs(five, 0, 1, 3, 4)
+            }
+        }
+
         val medians = arr grouped 5 map medianUpTo5 toArray;
         if (medians.size <= 5) medianUpTo5(medians)
         else median_int(medians)
-    }
-
-    private def medianUpTo5(five: Array[Int]): Int = {
-        def order2(a: Array[Int], i: Int, j: Int) = {
-            if (a(i) > a(j)) {
-                val t = a(i); a(i) = a(j); a(j) = t
-            }
-        }
-
-        def pairs(a: Array[Int], i: Int, j: Int, k: Int, l: Int) = {
-            if (a(i) < a(k)) {
-                order2(a, j, k); a(j)
-            }
-            else {
-                order2(a, i, l); a(i)
-            }
-        }
-
-        if (five.length < 2) return five(0)
-        order2(five, 0, 1)
-        if (five.length < 4) return (
-            if (five.length == 2 || five(2) < five(0)) five(0)
-            else if (five(2) > five(1)) five(1)
-            else five(2)
-            )
-        order2(five, 2, 3)
-        if (five.length < 5) pairs(five, 0, 1, 2, 3)
-        else if (five(0) < five(2)) {
-            order2(five, 1, 4); pairs(five, 1, 4, 2, 3)
-        }
-        else {
-            order2(five, 3, 4); pairs(five, 0, 1, 3, 4)
-        }
     }
 
     def median_double(arr: Array[Double]): Double = {
